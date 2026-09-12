@@ -2,7 +2,7 @@
 
 
 
-Network Working Group                                     M. S. A. Attia
+Individual submission                                     M. S. A. Attia
 Internet-Draft                                         12 September 2026
 Intended status: Standards Track                                        
 Expires: 16 March 2027
