@@ -1,6 +1,6 @@
 ---
 title: "Brain Control Network Protocol (BCNP)"
-docname: draft-salaheldin-bcnp-00
+docname: draft-salaheldin-bcnp-latest
 category: std
 ipr: trust200902
 submissiontype: IETF
