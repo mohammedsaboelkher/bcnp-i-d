@@ -2,14 +2,14 @@
 
 
 
-WG Working Group                                              Y. N. Here
-Internet-Draft                                    Your Organization Here
-Intended status: Informational                         12 September 2026
+Network Working Group                                     M. S. A. Attia
+Internet-Draft                                         12 September 2026
+Intended status: Standards Track                                        
 Expires: 16 March 2027
 
 
-                           TODO - Your title
-                  draft-todo-yourname-protocol-latest
+                 Brain Control Network Protocol (BCNP)
+                        draft-salaheldin-bcnp-00
 
 Abstract
 
@@ -20,16 +20,15 @@ About This Document
    This note is to be removed before publishing as an RFC.
 
    The latest revision of this draft can be found at
-   https://example.com/LATEST.  Status information for this document may
-   be found at https://datatracker.ietf.org/doc/draft-todo-yourname-
-   protocol/.
+   https://mohammedsaboelkher.github.io/bcnp-i-d/.  Status information
+   for this document may be found at https://datatracker.ietf.org/doc/
+   draft-salaheldin-bcnp/.
 
-   Discussion of this document takes place on the WG Working Group
-   mailing list (mailto:WG@example.com), which is archived at
-   https://example.com/WG.
+   Discussion of this document takes place on the Individual Individual
+   mailing list (mailto:mohammeds.aboelkher@gmail.com).
 
    Source for this draft and an issue tracker can be found at
-   https://github.com/USER/REPO.
+   https://github.com/mohammedsaboelkher/bcnp-i-d.
 
 Status of This Memo
 
@@ -109,6 +108,5 @@ Acknowledgments
 
 Author's Address
 
-   Your Name Here
-   Your Organization Here
-   Email: your.email@example.com
+   Mohamed Salaheldin Abouelkhir Attia
+   Email: mohammeds.aboelkher@gmail.com
