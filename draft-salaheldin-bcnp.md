@@ -8,8 +8,8 @@ number:
 date:
 consensus: false
 v: 3
-area: art
-workgroup:
+# area: art
+# workgroup:
 keyword:
  - brain
  - control
@@ -18,11 +18,11 @@ keyword:
  - application layer
  - binary protocol
 venue:
-  group: Individual
-  type: Individual
-  mail: mohammeds.aboelkher@gmail.com
-  github: mohammedsaboelkher/bcnp-i-d
-  latest: https://mohammedsaboelkher.github.io/bcnp-i-d/
+#  group: Individual
+#  type: Individual
+#  mail: mohammeds.aboelkher@gmail.com
+  github: "mohammedsaboelkher/bcnp-i-d"
+  latest: "https://mohammedsaboelkher.github.io/bcnp-i-d/draft-salaheldin-bcnp.html"
 
 author:
  -
