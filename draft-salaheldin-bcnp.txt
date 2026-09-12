@@ -9,7 +9,7 @@ Expires: 16 March 2027
 
 
                  Brain Control Network Protocol (BCNP)
-                        draft-salaheldin-bcnp-00
+                      draft-salaheldin-bcnp-latest
 
 Abstract
 
@@ -20,12 +20,9 @@ About This Document
    This note is to be removed before publishing as an RFC.
 
    The latest revision of this draft can be found at
-   https://mohammedsaboelkher.github.io/bcnp-i-d/.  Status information
-   for this document may be found at https://datatracker.ietf.org/doc/
-   draft-salaheldin-bcnp/.
-
-   Discussion of this document takes place on the Individual Individual
-   mailing list (mailto:mohammeds.aboelkher@gmail.com).
+   https://mohammedsaboelkher.github.io/bcnp-i-d/draft-salaheldin-
+   bcnp.html.  Status information for this document may be found at
+   https://datatracker.ietf.org/doc/draft-salaheldin-bcnp/.
 
    Source for this draft and an issue tracker can be found at
    https://github.com/mohammedsaboelkher/bcnp-i-d.
