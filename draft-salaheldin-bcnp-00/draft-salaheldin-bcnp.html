@@ -1,0 +1,2324 @@
+<!DOCTYPE html>
+<html lang="en" class="Internet-Draft">
+<head>
+<meta charset="utf-8">
+<meta content="Common,Latin" name="scripts">
+<meta content="initial-scale=1.0" name="viewport">
+<title>Brain Control Network Protocol (BCNP)</title>
+<meta content="Mohamed Salaheldin Abouelkhir Attia" name="author">
+<meta content="
+       The Brain Control Network Protocol (BCNP) is a binary, TCP-based application-layer protocol for discovering, configuring, and commanding networked devices from a single controller using a small, fixed vocabulary of discrete control inputs, such as those produced by a brain-computer interface. A Controller establishes a private wireless network that Devices join, discovers Devices and assigns each a persistent address, discovers and registers the Actions a Device can perform, and subsequently issues short, stateless commands, expressed through that same small input vocabulary, to elicit those Actions. This document specifies BCNP's binary message formats, its Discovery, Pairing, and Command phases, and the reconciliation mechanism used to recover from lost acknowledgments and Devices that change network address. 
+    " name="description">
+<meta content="xml2rfc 3.34.1" name="generator">
+<meta content="brain" name="keyword">
+<meta content="control" name="keyword">
+<meta content="heterogeneous devices network" name="keyword">
+<meta content="dynamic configuration" name="keyword">
+<meta content="application layer" name="keyword">
+<meta content="binary protocol" name="keyword">
+<meta content="draft-salaheldin-bcnp-latest" name="ietf.draft">
+<!-- Generator version information:
+  xml2rfc 3.34.1
+    Python 3.14.7
+    ConfigArgParse 1.7.7
+    google-i18n-address 3.1.1
+    intervaltree 3.2.1
+    Jinja2 3.1.6
+    lxml 6.1.1
+    natsort 8.4.0
+    platformdirs 4.11.10
+    pycountry 24.6.1
+    PyYAML 6.0.3
+    requests 2.33.1
+    wcwidth 0.8.4
+-->
+<link href="draft-salaheldin-bcnp.xml" rel="alternate" type="application/rfc+xml">
+<link href="#copyright" rel="license">
+<style type="text/css">@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Italic'), local('Lora-Italic'), url('https://martinthomson.github.io/rfc-css/fonts/lora-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Lora Regular'), local('Lora-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/lora-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C88, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-cyrillic.woff2') format('woff2');
+  unicode-range: U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-vietnamese.woff2') format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Lora Bold'), local('Lora-Bold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-bold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Lora';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Lora SemiBold'), local('Lora-SemiBold'), url('https://martinthomson.github.io/rfc-css/fonts/lora-semibold-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Oxygen Mono';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Oxygen Mono'), local('OxygenMono-Regular'), url('https://martinthomson.github.io/rfc-css/fonts/oxygenmono-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: italic;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-italic-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic-ext.woff2') format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-greek.woff2') format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Sofia Sans Semi Condensed';
+  font-style: normal;
+  font-weight: 1 1000;
+  src: url('https://martinthomson.github.io/rfc-css/fonts/sofiasanssemicondensed-regular-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+:root {
+  color-scheme: light dark;
+  --background-color: #fff;
+  --text-color: #222;
+  --title-color: #191919;
+  --link-color: #2a6496;
+  --highlight-color: #f9f9f9;
+  --line-color: #eee;
+  --pilcrow-weak: #ddd;
+  --pilcrow-strong: #bbb;
+  --small-font-size: 14.5px;
+  --font-mono: 'Oxygen Mono', monospace;
+  --font-title: "Sofia Sans Semi Condensed", sans-serif;
+  scrollbar-color: #bbb #eee;
+}
+body {
+  max-width: 600px;
+  margin: 75px auto;
+  padding: 0 5px;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  font: 16px/22px "Lora", serif;
+  scroll-behavior: smooth;
+}
+
+.ears {
+  display: none;
+}
+
+/* headings */
+section {
+  clear: both;
+}
+.section-number {
+  padding-right: 0.5em;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-title);
+  font-weight: 680;
+  margin: 0.8em 0 0.3em;
+  font-size-adjust: 0.5;
+  color: var(--title-color);
+}
+h1 {
+  &#title {
+    font-size: 32px;
+    line-height: 40px;
+    clear: both;
+    margin: 1.5em 0 0.2em;
+  }
+  &#rfcnum {
+    margin: 1.5em 0 0.2em;
+    & + h1#title {
+      margin: 0.2em 0;
+    }
+  }
+}
+
+h1, h2, h3 {
+  font-size: 22px;
+  line-height: 27px;
+}
+h4, h5, h6 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+/* general structure */
+.author {
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+#abstract+p {
+  font-size: 18px;
+  line-height: 24px;
+  & code, & samp, & tt {
+    font-size: 16px;
+    line-height: 0;
+  }
+}
+
+p {
+  padding: 0;
+  margin: 0.5em 0;
+  text-align: left;
+}
+div {
+  margin: 0;
+}
+.alignRight {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    margin: 0;
+    float: right;
+    clear: both;
+  }
+  & > *:nth-child(2) {
+    clear: both;
+    display: block;
+    border: none;
+  }
+}
+svg {
+  display: block;
+  /* font-family isn't space-separated, but =~ will have to do */
+  &[font-family~="monospace" i], & [font-family~="monospace" i] {
+    font-family: var(--font-mono);
+  }
+}
+.alignCenter {
+  margin: 1em 0;
+  &.art-text {
+    background-color: var(--highlight-color);
+    border: 1px solid var(--line-color);
+    border-radius: 3px;
+    padding: 0.5em 1em 0;
+    margin-bottom: 0.5em;
+    & pre {
+      padding: 0;
+      width: auto;
+    }
+  }
+  & > *:first-child {
+    border: none;
+    /* this isn't optimal, but it's an existence proof.  PrinceXML doesn't
+       support flexbox yet.
+    */
+    display: table;
+    margin: 0 auto;
+  }
+}
+
+/* lists */
+ol, ul {
+  padding: 0;
+  margin: 0 0 0.5em 2em;
+  & :is(ol, ul) {
+    margin-left: 1em;
+  }
+}
+li {
+  margin: 0 0 0.25em 0;
+}
+ul.empty, .ulEmpty {
+  list-style-type: none;
+  & li {
+    margin-top: 0.5em;
+  }
+}
+:is(ul, ol).compact, .ulCompact, .olCompact {
+  margin: 0 0 0 2em;
+  & li {
+    margin: 0;
+    & :first-child { margin-top: 0; }
+    & :last-child { margin-bottom: 0; }
+  }
+}
+
+/* definition lists */
+dl {
+  clear: left;
+  --indent: 3ch;
+  /* --indent: attr(indent ch); not supported in any browser, but we can dream */
+  &.olPercent {
+    --indent: 5ch;
+    & > dt {
+      min-width: calc(var(--indent) - 2ch);
+      float: none;
+    }
+  }
+
+  dl > dd > & {
+    margin-top: 0.5em;
+    margin-bottom: 0;
+  }
+
+  &:not(.dlNewline) > dt {
+    float: left;
+    margin-right: 2ch;
+    min-width: 8ch;
+  }
+  & > dd {
+    margin-bottom: .8em;
+    margin-left: var(--indent) !important; /* stupid element overrides */
+    min-height: 2ex;
+  }
+}
+:is(dl.compact, .dlCompact) > dd {
+  margin-bottom: 0;
+  & > :is(:first-child, .break:first-child + *) {
+    margin-top: 0;
+  }
+  & > :is(:last-child) {
+    margin-bottom: 0;
+  }
+}
+:is(dd, span).break {
+  display: none;
+}
+
+/* links */
+a {
+  text-decoration: none;
+  &[href] {
+    color: var(--link-color);
+    &:hover { text-decoration: underline; }
+    &.selfRef {
+      color: var(--text-color);
+      &:hover {
+        text-decoration: none;
+        background-color: var(--highlight-color);
+      }
+    }
+  }
+}
+.iref + a[href].internal {
+  color: var(--text-color);
+}
+a.xref:is(.cite, .auto), :is(#status-of-memo, #copyright) a {
+  white-space: nowrap;
+}
+
+/* Figures */
+tt, code, pre {
+  background-color: var(--highlight-color);
+  font: 14px/22px var(--font-mono);
+}
+tt, code {
+  /* changing the font for inline elements leads to different ascender
+     and descender heights; as we want to retain baseline alignment,
+     remove leading to avoid altering the final height of lines
+     note: this fails if these blocks take an entire line,
+     a different solution would be great */
+  line-height: 0;
+}
+:is(h1, h2, h3, h4, h5, h6) :is(tt, code) {
+  font-size: 84%;
+}
+pre {
+  border: 1px solid var(--line-color);
+  font-size: 13.5px;
+  line-height: 16px;
+  letter-spacing: -0.2px;
+  margin: 5px;
+  padding: 5px;
+}
+img {
+  max-width: 100%;
+}
+figure {
+  margin: 0.5em 0;
+  padding: 0;
+  & blockquote {
+    margin: 0.8em 0.4em 0.4em;
+  }
+}
+figcaption, caption {
+  font-style: italic;
+  margin: 0.5em 1.5em;
+  text-align: left;
+  caption-side: bottom;
+}
+@media screen {
+  /* Auto-collapse boilerplate. */
+  :is(#status-of-memo, #copyright) {
+    & p {
+      margin: -2px 0;
+      max-height: 0;
+      transition: max-height 2s ease, margin 0.5s ease 0.5s;
+      overflow: hidden;
+    }
+    &:hover p,
+    & h2:target ~ p {
+      margin: 0.5em 0;
+      max-height: 500px;
+      overflow: auto;
+    }
+  }
+  pre, svg {
+    display: inline-block;
+    /* In the horizontal direction, sometimes people make over-sized figures.
+       Scrollbars for those is therefore necessary: auto adds them as necessary..
+       In the vertical direction, the line-height can combine with the font
+       asender/descender height to produce scrollbars: hidden avoids that. */
+    overflow: auto hidden;
+  }
+  pre {
+    max-width: 100%;
+    width: calc(100% - 22px - 1em);
+  }
+  svg {
+    max-width: calc(100% - 22px - 1em);
+  }
+  figure pre {
+    display: block;
+    width: calc(100% - 25px);
+  }
+  :is(pre, svg) + .pilcrow {
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding-bottom: 8px;
+  }
+}
+
+/* aside, blockquote */
+aside, blockquote {
+  margin-left: 0;
+  padding: 0 2em;
+  font-style: italic;
+}
+blockquote {
+  margin: 1em 0;
+  border-left: 2px var(--pilcrow-strong) solid;
+}
+cite {
+  display: block;
+  text-align: right;
+  font-style: italic;
+}
+
+/* tables */
+table {
+  width: auto;
+  max-width: 100%;
+  margin: 0 0 1em;
+  border-collapse: collapse;
+  &.right { margin-left: auto; }
+  &.center { margin-left: auto; margin-right: auto; }
+  &.left { margin-right: auto; }
+  & .text-left { text-align: left; }
+  & .text-center { text-align: center; }
+  & .text-right { text-align: right; }
+  & caption {
+    margin: 0;
+    padding: 3px 0 3px 1em;
+  }
+  & p { margin: 0; }
+}
+
+thead, tbody {
+  border: 1px solid var(--line-color);
+}
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 5px 10px;
+}
+th {
+  background-color: var(--line-color);
+}
+:is(tr:nth-child(2n), thead+tbody > tr:nth-child(2n+1)) > td {
+  background-color: var(--background-color);
+}
+:is(tr:nth-child(2n+1), thead+tbody > tr:nth-child(2n)) > td {
+  background-color: var(--highlight-color);
+}
+
+/* pilcrow */
+a.pilcrow {
+  margin-left: 3px;
+  opacity: 0.2;
+  user-select: none;
+  &[href] {
+    color: var(--pilcrow-weak);
+    &:hover { text-decoration: none; }
+  }
+  @media not print {
+    :hover > &, &:focus {
+      opacity: 1;
+    }
+    &[href]:hover {
+      color: var(--pilcrow-strong);
+      background-color: transparent;
+    }
+  }
+  @media print {
+    display: none;
+  }
+}
+
+/* misc */
+hr {
+  border: 0;
+  border-top: 1px solid var(--line-color);
+}
+.bcp14 {
+  font-variant: small-caps;
+  font-weight: 600;
+  font-size: var(--small-font-size);
+}
+.role {
+  font-variant: all-small-caps;
+}
+sub, sup {
+  line-height: 1;
+  font-size: 80%;
+}
+
+/* info block */
+#identifiers {
+  margin: 0;
+  font-size: var(--small-font-size);
+  line-height: 18px;
+  --identifier-width: 15ch;
+  & dt {
+    width: var(--identifier-width);
+    min-width: var(--identifier-width);
+    clear: left;
+    float: left;
+    text-align: right;
+    margin-right: 1ch;
+  }
+  & dd {
+    margin: 0;
+    margin-left: calc(1em + var(--identifier-width)) !important;
+    min-width: 5em;
+  }
+  & .authors {
+    & .author {
+      display: inline-block;
+      margin-right: 1.5em;
+    }
+    & .org {
+      font-style: italic;
+    }
+  }
+}
+
+/* The prepared/rendered info at the very bottom of the page */
+.docInfo {
+  color: #999;
+  font-size: 0.9em;
+  font-style: italic;
+  margin-top: 2em;
+  & .prepared {
+    float: right;
+  }
+}
+
+/* table of contents */
+#toc {
+  padding: 0.75em 0 2em 0;
+  margin-bottom: 1em;
+
+  & nav {
+    & ul {
+      margin: 0 0.5em 0 0;
+      padding: 0;
+      list-style: none;
+    }
+    & li {
+      line-height: 1.3em;
+      margin: 2px 0;
+      padding-left: 1.2em;
+      text-indent: -1.2em;
+    }
+  }
+  & a.xref {
+    white-space: normal;
+  }
+}
+
+.references {
+  & > dt {
+    text-align: right;
+    font-weight: bold;
+    min-width: 10ch;
+    margin-right: 1.5ch;
+    &:target::before {
+      content: "⇒";
+      margin: 0 10px 0 -25px;
+    }
+  }
+  & > dd {
+    margin-left: 12ch !important;
+    overflow: visible;
+    & .refInstance {
+      margin-bottom: 0.8em;
+    }
+    & .ascii {
+      margin-bottom: 0.25em;
+    }
+  }
+}
+
+#rfc\.index\.index + ul {
+  margin-left: 0;
+}
+
+/* authors */
+address.vcard {
+  font-style: normal;
+  max-width: 20em;
+  margin: 1em auto 1em 0;
+
+  & .nameRole {
+    font-weight: 700;
+    margin-left: 0;
+  }
+  & .label {
+    margin: 0.5em 0;
+  }
+  & .type {
+    display: none;
+  }
+  & .alternative-contact {
+    margin: 0.5em 0 0.25em 0;
+  }
+  & .non-ascii {
+    margin: 0 0 0 2em;
+  }
+  & div.left {
+    text-align: left;
+  }
+  & div.right {
+    text-align: right;
+  }
+}
+
+hr.addr {
+  border-top: 1px dashed;
+  margin: 0;
+  color: #ddd;
+  max-width: calc(100% - 16px);
+}
+@media (min-width: 500px) {
+  #authors-addresses {
+    & > section {
+      column-count: 2;
+      column-gap: 20px;
+    }
+    & > section > h2 {
+      column-span: all;
+    }
+    /* hack for break-inside: avoid-column */
+    & address {
+      display: inline-block;
+      break-inside: avoid-column;
+    }
+  }
+}
+
+/* Comments */
+.rfcEditorRemove {
+  & p:first-of-type {
+    font-style: italic;
+  }
+}
+.cref {
+  background-color: rgba(249, 232, 105, 0.3);
+  padding: 2px 4px;
+}
+.crefSource {
+  font-style: italic;
+}
+
+@media screen {
+  #toc {
+    & nav {
+      font-family: var(--font-title);
+      font-weight: 360;
+      & > ul { margin-bottom: 2em; }
+      & ul {
+        margin: 0 0 0 4px;
+        & :is(p, li) {
+          margin: 2px 0;
+        }
+      }
+    }
+    & a.toplink {
+      float: right;
+    }
+  }
+}
+@media not screen {
+  #toc a.toplink {
+    display: none;
+  }
+}
+
+
+/* TOC layout for smaller screens */
+@media screen and (max-width: 929px) {
+  #toc {
+    position: fixed;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    padding: 1px 0 0 0;
+    margin: 0;
+    border-bottom: 1px solid #ccc;
+    opacity: 0.6;
+    & h2 {
+      margin: 0;
+      padding: 2px 0 2px 6px;
+      padding-right: 1em;
+      font-size: 18px;
+      line-height: 24px;
+      min-width: 190px;
+      text-align: right;
+      background-color: #444;
+      color: white;
+      cursor: pointer;
+      &::before { /* css hamburger */
+        float: right;
+        position: relative;
+        width: 1em;
+        height: 1px;
+        left: -164px;
+        margin: 8px 0 0 0;
+        background: white none repeat scroll 0 0;
+        box-shadow: 0 4px 0 0 white, 0 8px 0 0 white;
+        content: "";
+      }
+    }
+    & nav {
+      display: none;
+      background-color: var(--background-color);
+      padding: 0.5em 1em 1em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      height: calc(100vh - 48px);
+      border-left: 1px solid #ddd;
+    }
+    &.active {
+      opacity: 1;
+      & nav { display: block; }
+    }
+    /* Make the collapsed ToC header render white on gray also when it's a link */
+    & h2 a,
+    & h2 a:is(:link, :focus, :hover),
+    & a.toplink,
+    & a.toplink:hover {
+      color: white;
+      background-color: #444;
+      text-decoration: none;
+    }
+    & a.toplink {
+      margin: 2px 0.5em 0;
+    }
+  }
+}
+
+/* TOC layout for wide screens */
+@media screen and (min-width: 930px) {
+  body {
+    padding-right: 360px;
+    padding-right: calc(min(180px + 20%, 500px));
+  }
+  #toc {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    right: calc(50vw - 480px);
+    width: 312px;
+    margin: 0;
+    padding: 0;
+    z-index: 1;
+    & h2 {
+      margin: 0;
+      padding: 0.25em 1em 1em 0;
+    }
+    & nav {
+      display: block;
+      height: calc(90vh - 84px);
+      bottom: 0;
+      padding: 0.5em 0 2em;
+      overflow: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+    }
+    & a.toplink {
+      margin: 8px 0.5em 0;
+    }
+  }
+  img { /* future proofing */
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* pagination */
+@media print {
+  body {
+    width: 100%;
+  }
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  #n-copyright-notice {
+    border-bottom: none;
+  }
+  #toc {
+    page-break-before: always;
+    border-top: none;
+    padding-top: 0;
+  }
+  #n-introduction {
+    page-break-before: always;
+  }
+  figure, pre, .vcard {
+    page-break-inside: avoid;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  :is(h2, h3, h4, h5, h6)+*, dd {
+    page-break-before: avoid;
+  }
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 10pt;
+  }
+  table {
+    border: 1px solid #ddd;
+  }
+  td {
+    border-top: 1px solid #ddd;
+  }
+}
+
+@page :first {
+  padding-top: 0;
+  @top-left {
+    content: normal;
+    border: none;
+  }
+  @top-center {
+    content: normal;
+    border: none;
+  }
+  @top-right {
+    content: normal;
+    border: none;
+  }
+}
+
+@page {
+  size: A4;
+  margin-bottom: 45mm;
+  padding-top: 20px;
+}
+
+/* Dark mode. */
+@media (prefers-color-scheme: dark) {
+:root {
+  --background-color: #121212;
+  --text-color: #f0f0f0;
+  --title-color: #fff;
+  --link-color: #4da4f0;
+  --highlight-color: #282828;
+  --line-color: #444;
+  --pilcrow-weak: #444;
+  --pilcrow-strong: #666;
+  scrollbar-color: #777 #333;
+}
+}
+
+/* SVG Trick: a prefix match works because only black and white are allowed */
+svg {
+  & :is([stroke="black"], [stroke^="#000"]) {
+    stroke: var(--text-color);
+  }
+  & :is([stroke="white"], [stroke^="#fff"]) {
+    stroke: var(--background-color);
+  }
+  & :is([fill="black"], [fill^="#000"], :not([fill])) {
+    fill: var(--text-color);
+  }
+  & :is([fill="white"], [fill^="#fff"]) {
+    fill: var(--background-color);
+  }
+}
+</style>
+
+</head>
+<body class="xml2rfc">
+<table class="ears">
+<thead><tr>
+<td class="left">Internet-Draft</td>
+<td class="center">Brain Control Network Protocol (BCNP)</td>
+<td class="right">September 2026</td>
+</tr></thead>
+<tfoot><tr>
+<td class="left">Attia</td>
+<td class="center">Expires 26 March 2027</td>
+<td class="right">[Page]</td>
+</tr></tfoot>
+</table>
+<div id="external-metadata" class="document-information"></div>
+<div id="internal-metadata" class="document-information">
+<dl id="identifiers">
+<dt class="label-workgroup">Workgroup:</dt>
+<dd class="workgroup">Individual submission</dd>
+<dt class="label-internet-draft">Internet-Draft:</dt>
+<dd class="internet-draft">draft-salaheldin-bcnp-latest</dd>
+<dt class="label-published">Published:</dt>
+<dd class="published">
+<time datetime="2026-09-22" class="published">22 September 2026</time>
+    </dd>
+<dt class="label-intended-status">Intended Status:</dt>
+<dd class="intended-status">Standards Track</dd>
+<dt class="label-expires">Expires:</dt>
+<dd class="expires"><time datetime="2027-03-26">26 March 2027</time></dd>
+<dt class="label-authors">Author:</dt>
+<dd class="authors">
+<div class="author">
+      <div class="author-name">M. S. A. Attia</div>
+</div>
+</dd>
+</dl>
+</div>
+<h1 id="title">Brain Control Network Protocol (BCNP)</h1>
+<section id="section-abstract">
+      <h2 id="abstract"><a href="#abstract" class="selfRef">Abstract</a></h2>
+<p id="section-abstract-1">The Brain Control Network Protocol (BCNP) is a binary, TCP-based application-layer protocol for discovering, configuring, and commanding networked devices from a single controller using a small, fixed vocabulary of discrete control inputs, such as those produced by a brain-computer interface. A Controller establishes a private wireless network that Devices join, discovers Devices and assigns each a persistent address, discovers and registers the Actions a Device can perform, and subsequently issues short, stateless commands, expressed through that same small input vocabulary, to elicit those Actions. This document specifies BCNP's binary message formats, its Discovery, Pairing, and Command phases, and the reconciliation mechanism used to recover from lost acknowledgments and Devices that change network address.<a href="#section-abstract-1" class="pilcrow">¶</a></p>
+</section>
+<section class="note rfcEditorRemove" id="section-note.1">
+      <h2 id="name-about-this-document">
+<a href="#name-about-this-document" class="section-name selfRef">About This Document</a>
+      </h2>
+<p id="section-note.1-1">This note is to be removed before publishing as an RFC.<a href="#section-note.1-1" class="pilcrow">¶</a></p>
+<p id="section-note.1-2">
+        The latest revision of this draft can be found at <span><a href="https://mohammedsaboelkher.github.io/bcnp-i-d/draft-salaheldin-bcnp.html">https://mohammedsaboelkher.github.io/bcnp-i-d/draft-salaheldin-bcnp.html</a></span>.
+        Status information for this document may be found at <span><a href="https://datatracker.ietf.org/doc/draft-salaheldin-bcnp/">https://datatracker.ietf.org/doc/draft-salaheldin-bcnp/</a></span>.<a href="#section-note.1-2" class="pilcrow">¶</a></p>
+<p id="section-note.1-3">Source for this draft and an issue tracker can be found at
+        <span><a href="https://github.com/mohammedsaboelkher/bcnp-i-d">https://github.com/mohammedsaboelkher/bcnp-i-d</a></span>.<a href="#section-note.1-3" class="pilcrow">¶</a></p>
+</section>
+<div id="status-of-memo">
+<section id="section-boilerplate.1">
+        <h2 id="name-status-of-this-memo">
+<a href="#name-status-of-this-memo" class="section-name selfRef">Status of This Memo</a>
+        </h2>
+<p id="section-boilerplate.1-1">
+        This Internet-Draft is submitted in full conformance with the
+        provisions of BCP 78 and BCP 79.<a href="#section-boilerplate.1-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-2">
+        Internet-Drafts are working documents of the Internet Engineering Task
+        Force (IETF). Note that other groups may also distribute working
+        documents as Internet-Drafts. The list of current Internet-Drafts is
+        at <span><a href="https://datatracker.ietf.org/drafts/current/">https://datatracker.ietf.org/drafts/current/</a></span>.<a href="#section-boilerplate.1-2" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-3">
+        Internet-Drafts are draft documents valid for a maximum of six months
+        and may be updated, replaced, or obsoleted by other documents at any
+        time. It is inappropriate to use Internet-Drafts as reference
+        material or to cite them other than as "work in progress."<a href="#section-boilerplate.1-3" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.1-4">
+        This Internet-Draft will expire on 26 March 2027.<a href="#section-boilerplate.1-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="copyright">
+<section id="section-boilerplate.2">
+        <h2 id="name-copyright-notice">
+<a href="#name-copyright-notice" class="section-name selfRef">Copyright Notice</a>
+        </h2>
+<p id="section-boilerplate.2-1">
+            Copyright (c) 2026 IETF Trust and the persons identified as the
+            document authors. All rights reserved.<a href="#section-boilerplate.2-1" class="pilcrow">¶</a></p>
+<p id="section-boilerplate.2-2">
+            This document is subject to BCP 78 and the IETF Trust's Legal
+            Provisions Relating to IETF Documents
+            (<span><a href="https://trustee.ietf.org/license-info">https://trustee.ietf.org/license-info</a></span>) in effect on the date of
+            publication of this document. Please review these documents
+            carefully, as they describe your rights and restrictions with
+            respect to this document. Code Components extracted from this
+            document must include Revised BSD License text as described in
+            Section 4.e of the Trust Legal Provisions and are provided without
+            warranty as described in the Revised BSD License.<a href="#section-boilerplate.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="toc">
+<section id="section-toc.1">
+        <a href="#" onclick="scroll(0,0)" class="toplink">▲</a><h2 id="name-table-of-contents">
+<a href="#name-table-of-contents" class="section-name selfRef">Table of Contents</a>
+        </h2>
+<nav class="toc"><ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.1">
+            <p id="section-toc.1-1.1.1" class="keepWithNext"><a href="#section-1" class="auto internal xref">1</a>.  <a href="#name-introduction" class="internal xref">Introduction</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2">
+            <p id="section-toc.1-1.2.1" class="keepWithNext"><a href="#section-2" class="auto internal xref">2</a>.  <a href="#name-conventions-and-definitions" class="internal xref">Conventions and Definitions</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.2.2.1">
+                <p id="section-toc.1-1.2.2.1.1" class="keepWithNext"><a href="#section-2.1" class="auto internal xref">2.1</a>.  <a href="#name-terminology" class="internal xref">Terminology</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3">
+            <p id="section-toc.1-1.3.1"><a href="#section-3" class="auto internal xref">3</a>.  <a href="#name-protocol-overview" class="internal xref">Protocol Overview</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.3.2.1">
+                <p id="section-toc.1-1.3.2.1.1"><a href="#section-3.1" class="auto internal xref">3.1</a>.  <a href="#name-deployment-model" class="internal xref">Deployment Model</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4">
+            <p id="section-toc.1-1.4.1"><a href="#section-4" class="auto internal xref">4</a>.  <a href="#name-message-format" class="internal xref">Message Format</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.1">
+                <p id="section-toc.1-1.4.2.1.1"><a href="#section-4.1" class="auto internal xref">4.1</a>.  <a href="#name-header" class="internal xref">Header</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.2">
+                <p id="section-toc.1-1.4.2.2.1"><a href="#section-4.2" class="auto internal xref">4.2</a>.  <a href="#name-notation" class="internal xref">Notation</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.3">
+                <p id="section-toc.1-1.4.2.3.1"><a href="#section-4.3" class="auto internal xref">4.3</a>.  <a href="#name-status-codes" class="internal xref">Status Codes</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4">
+                <p id="section-toc.1-1.4.2.4.1"><a href="#section-4.4" class="auto internal xref">4.4</a>.  <a href="#name-message-types" class="internal xref">Message Types</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4.2.1">
+                    <p id="section-toc.1-1.4.2.4.2.1.1"><a href="#section-4.4.1" class="auto internal xref">4.4.1</a>.  <a href="#name-device-configuration-phase" class="internal xref">Device Configuration Phase</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4.2.2">
+                    <p id="section-toc.1-1.4.2.4.2.2.1"><a href="#section-4.4.2" class="auto internal xref">4.4.2</a>.  <a href="#name-action-configuration-phase" class="internal xref">Action Configuration Phase</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4.2.3">
+                    <p id="section-toc.1-1.4.2.4.2.3.1"><a href="#section-4.4.3" class="auto internal xref">4.4.3</a>.  <a href="#name-command-mode" class="internal xref">Command Mode</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.4.2.4">
+                    <p id="section-toc.1-1.4.2.4.2.4.1"><a href="#section-4.4.4" class="auto internal xref">4.4.4</a>.  <a href="#name-reconciliation-mode" class="internal xref">Reconciliation Mode</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.5">
+                <p id="section-toc.1-1.4.2.5.1"><a href="#section-4.5" class="auto internal xref">4.5</a>.  <a href="#name-json-schema" class="internal xref">JSON Schema</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.5.2.1">
+                    <p id="section-toc.1-1.4.2.5.2.1.1"><a href="#section-4.5.1" class="auto internal xref">4.5.1</a>.  <a href="#name-device-descriptor" class="internal xref">Device Descriptor</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.4.2.5.2.2">
+                    <p id="section-toc.1-1.4.2.5.2.2.1"><a href="#section-4.5.2" class="auto internal xref">4.5.2</a>.  <a href="#name-action-descriptor" class="internal xref">Action Descriptor</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5">
+            <p id="section-toc.1-1.5.1"><a href="#section-5" class="auto internal xref">5</a>.  <a href="#name-protocol-operation" class="internal xref">Protocol Operation</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.1">
+                <p id="section-toc.1-1.5.2.1.1"><a href="#section-5.1" class="auto internal xref">5.1</a>.  <a href="#name-controller-states" class="internal xref">Controller States</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.2">
+                <p id="section-toc.1-1.5.2.2.1"><a href="#section-5.2" class="auto internal xref">5.2</a>.  <a href="#name-device-states" class="internal xref">Device States</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.3">
+                <p id="section-toc.1-1.5.2.3.1"><a href="#section-5.3" class="auto internal xref">5.3</a>.  <a href="#name-unrecognized-messages" class="internal xref">Unrecognized Messages</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.4">
+                <p id="section-toc.1-1.5.2.4.1"><a href="#section-5.4" class="auto internal xref">5.4</a>.  <a href="#name-local-and-synthesized-error" class="internal xref">Local and Synthesized Errors</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.5">
+                <p id="section-toc.1-1.5.2.5.1"><a href="#section-5.5" class="auto internal xref">5.5</a>.  <a href="#name-discovery-procedure" class="internal xref">Discovery Procedure</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.5.2.1">
+                    <p id="section-toc.1-1.5.2.5.2.1.1"><a href="#section-5.5.1" class="auto internal xref">5.5.1</a>.  <a href="#name-key-addressing-and-paginati" class="internal xref">Key Addressing and Pagination</a></p>
+</li>
+                </ul>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.6">
+                <p id="section-toc.1-1.5.2.6.1"><a href="#section-5.6" class="auto internal xref">5.6</a>.  <a href="#name-pairing-procedure" class="internal xref">Pairing Procedure</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.7">
+                <p id="section-toc.1-1.5.2.7.1"><a href="#section-5.7" class="auto internal xref">5.7</a>.  <a href="#name-command-procedure" class="internal xref">Command Procedure</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.8">
+                <p id="section-toc.1-1.5.2.8.1"><a href="#section-5.8" class="auto internal xref">5.8</a>.  <a href="#name-idempotency-and-retry-safet" class="internal xref">Idempotency and Retry Safety</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.8.2.1">
+                    <p id="section-toc.1-1.5.2.8.2.1.1"><a href="#section-5.8.1" class="auto internal xref">5.8.1</a>.  <a href="#name-idempotent-operations" class="internal xref">Idempotent Operations</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.8.2.2">
+                    <p id="section-toc.1-1.5.2.8.2.2.1"><a href="#section-5.8.2" class="auto internal xref">5.8.2</a>.  <a href="#name-reconciliation" class="internal xref">Reconciliation</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.5.2.8.2.3">
+                    <p id="section-toc.1-1.5.2.8.2.3.1"><a href="#section-5.8.3" class="auto internal xref">5.8.3</a>.  <a href="#name-register-device-verificatio" class="internal xref">Register Device Verification</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6">
+            <p id="section-toc.1-1.6.1"><a href="#section-6" class="auto internal xref">6</a>.  <a href="#name-security-considerations" class="internal xref">Security Considerations</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1">
+                <p id="section-toc.1-1.6.2.1.1"><a href="#section-6.1" class="auto internal xref">6.1</a>.  <a href="#name-trust-model-and-scope" class="internal xref">Trust Model and Scope</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.1">
+                    <p id="section-toc.1-1.6.2.1.2.1.1"><a href="#section-6.1.1" class="auto internal xref">6.1.1</a>.  <a href="#name-residual-risk-within-the-tr" class="internal xref">Residual Risk Within the Trust Boundary</a></p>
+</li>
+                  <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.6.2.1.2.2">
+                    <p id="section-toc.1-1.6.2.1.2.2.1"><a href="#section-6.1.2" class="auto internal xref">6.1.2</a>.  <a href="#name-denial-of-service" class="internal xref">Denial of Service</a></p>
+</li>
+                </ul>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.7">
+            <p id="section-toc.1-1.7.1"><a href="#section-7" class="auto internal xref">7</a>.  <a href="#name-iana-considerations" class="internal xref">IANA Considerations</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8">
+            <p id="section-toc.1-1.8.1"><a href="#section-8" class="auto internal xref">8</a>.  <a href="#name-references" class="internal xref">References</a></p>
+<ul class="compact toc ulBare ulEmpty">
+<li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.1">
+                <p id="section-toc.1-1.8.2.1.1"><a href="#section-8.1" class="auto internal xref">8.1</a>.  <a href="#name-normative-references" class="internal xref">Normative References</a></p>
+</li>
+              <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.8.2.2">
+                <p id="section-toc.1-1.8.2.2.1"><a href="#section-8.2" class="auto internal xref">8.2</a>.  <a href="#name-informative-references" class="internal xref">Informative References</a></p>
+</li>
+            </ul>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.9">
+            <p id="section-toc.1-1.9.1"><a href="#appendix-A" class="auto internal xref">Appendix A</a>.  <a href="#name-example-input-mechanisms" class="internal xref">Example Input Mechanisms</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.10">
+            <p id="section-toc.1-1.10.1"><a href="#appendix-B" class="auto internal xref">Appendix B</a>.  <a href="#name-example-device-onboarding" class="internal xref">Example Device Onboarding</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.11">
+            <p id="section-toc.1-1.11.1"><a href="#appendix-C" class="auto internal xref"></a><a href="#name-acknowledgments" class="internal xref">Acknowledgments</a></p>
+</li>
+          <li class="compact toc ulBare ulEmpty" id="section-toc.1-1.12">
+            <p id="section-toc.1-1.12.1"><a href="#appendix-D" class="auto internal xref"></a><a href="#name-authors-address" class="internal xref">Author's Address</a></p>
+</li>
+        </ul>
+</nav>
+</section>
+</div>
+<div id="intro">
+<section id="section-1">
+      <h2 id="name-introduction">
+<a href="#section-1" class="section-number selfRef">1. </a><a href="#name-introduction" class="section-name selfRef">Introduction</a>
+      </h2>
+<p id="section-1-1">Brain-computer interfaces (BCIs) allow a user to control external systems using neural signals, most commonly electroencephalography (EEG), without requiring physical movement. This makes BCIs a valuable input modality for assistive technology, benefiting users with severe motor impairments, as well as an emerging general-purpose input method. A defining constraint of BCI-based input, however, is that only a small number of distinct mental commands can typically be classified reliably; each additional command that a user must learn to produce, and a classifier must learn to distinguish, increases training burden and reduces accuracy.<a href="#section-1-1" class="pilcrow">¶</a></p>
+<p id="section-1-2">The Brain Control Network Protocol (BCNP) is designed around this constraint. Its Controller (a software program with no dedicated user interface assumed, and expected in practice to be driven by an EEG headset's signal classifier) interacts with the protocol through a small, fixed set of "probes": seven control probes (Discover, Hello, Register, Forget, End, Collection, Device) and a configurable number, K, of key probes, where K corresponds to however many distinct classes a given classifier can reliably distinguish. Each probe corresponds to one distinguishable mental command a user can produce.<a href="#section-1-2" class="pilcrow">¶</a></p>
+<p id="section-1-3">BCNP's central design goal is to let this same small vocabulary of K probes control an arbitrary number of Devices and Actions, without requiring dedicated software or a retrained classifier for each new device. This is achieved by making the mapping between probes and real Devices and Actions fully configurable at runtime: a Controller assigns Devices to Collections and Device Keys during a Device Configuration Phase ("Discovery"), and assigns a Device's Actions to Action Keys during an Action Configuration Phase ("Pairing"), after which the same K key probes can elicit different Actions depending on which Device is currently addressed. A user who has learned to reliably produce K distinguishable mental commands can, in principle, control any number of BCNP Devices.<a href="#section-1-3" class="pilcrow">¶</a></p>
+<p id="section-1-4">BCNP is designed for a controller-hosted network: the Controller is responsible for establishing the wireless network Devices join, and BCNP's security properties (<span><a href="#security" class="internal xref">Security Considerations</a> (<a href="#security" class="auto internal xref">Section 6</a>)</span>) depend on that network being the trust boundary. Joining a pre-existing, general-purpose network is out of scope for this document.<a href="#section-1-4" class="pilcrow">¶</a></p>
+<p id="section-1-5">This document specifies:<a href="#section-1-5" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-1-6.1">
+          <p id="section-1-6.1.1">the BCNP binary header and message formats (<span><a href="#msgformat" class="internal xref">Message Format</a> (<a href="#msgformat" class="auto internal xref">Section 4</a>)</span>),<a href="#section-1-6.1.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-6.2">
+          <p id="section-1-6.2.1">the Device Configuration Phase ("Discovery"), Action Configuration Phase ("Pairing"), and Command phase, including the state machines governing Controller and Device behavior (<span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>),<a href="#section-1-6.2.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-6.3">
+          <p id="section-1-6.3.1">a reconciliation mechanism for recovering from lost acknowledgments and Devices that have changed network address (<span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>), and<a href="#section-1-6.3.1" class="pilcrow">¶</a></p>
+</li>
+        <li class="normal" id="section-1-6.4">
+          <p id="section-1-6.4.1">the security properties and residual risks of BCNP's intended deployment model (<span><a href="#security" class="internal xref">Security Considerations</a> (<a href="#security" class="auto internal xref">Section 6</a>)</span>).<a href="#section-1-6.4.1" class="pilcrow">¶</a></p>
+</li>
+      </ul>
+</section>
+</div>
+<div id="conventions-and-definitions">
+<section id="section-2">
+      <h2 id="name-conventions-and-definitions">
+<a href="#section-2" class="section-number selfRef">2. </a><a href="#name-conventions-and-definitions" class="section-name selfRef">Conventions and Definitions</a>
+      </h2>
+<p id="section-2-1">The key words "<span class="bcp14">MUST</span>", "<span class="bcp14">MUST NOT</span>", "<span class="bcp14">REQUIRED</span>", "<span class="bcp14">SHALL</span>", "<span class="bcp14">SHALL NOT</span>", "<span class="bcp14">SHOULD</span>", "<span class="bcp14">SHOULD NOT</span>", "<span class="bcp14">RECOMMENDED</span>", "<span class="bcp14">NOT RECOMMENDED</span>",
+"<span class="bcp14">MAY</span>", and "<span class="bcp14">OPTIONAL</span>" in this document are to be interpreted as
+described in BCP 14 <span>[<a href="#RFC2119" class="cite xref">RFC2119</a>]</span> <span>[<a href="#RFC8174" class="cite xref">RFC8174</a>]</span> when, and only when, they
+appear in all capitals, as shown here.<a href="#section-2-1" class="pilcrow">¶</a></p>
+<div id="terminology">
+<section id="section-2.1">
+        <h3 id="name-terminology">
+<a href="#section-2.1" class="section-number selfRef">2.1. </a><a href="#name-terminology" class="section-name selfRef">Terminology</a>
+        </h3>
+<span class="break"></span><dl class="dlParallel" id="section-2.1-1">
+          <dt id="section-2.1-1.1">Control Network:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.2">
+            <p id="section-2.1-1.2.1">A network comprising one Controller and a set of Devices, in which the Controller configures and commands the Devices.<a href="#section-2.1-1.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.3">Controller:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.4">
+            <p id="section-2.1-1.4.1">A software program that configures and commands a set of Devices via the Probes defined in this document. This document assumes no specific Controller user interface or input mechanism; see <span><a href="#intro" class="internal xref">Introduction</a> (<a href="#intro" class="auto internal xref">Section 1</a>)</span> for the brain-computer interface use case that motivates BCNP's design.<a href="#section-2.1-1.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.5">Device:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.6">
+            <p id="section-2.1-1.6.1">A software program that listens for configuration and commands from a Controller.<a href="#section-2.1-1.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.7">Probe:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.8">
+            <p id="section-2.1-1.8.1">A single, discrete unit of Controller input, corresponding to one command a Controller's operator can produce. A Controller has seven Control Probes (Discover, Hello, Register, Forget, End, Collection, Device) and K Key Probes, numbered 0 to K-1.<a href="#section-2.1-1.8.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.9">K:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.10">
+            <p id="section-2.1-1.10.1">The number of Key Probes available to a Controller. K is fixed for a given Controller and is expected to correspond to however many distinct inputs its underlying input mechanism can reliably distinguish. K bounds the range of Collection Key, Device Key, Action Key, and Temporary Device Key; it does not bound Root Action Key or Sequence ID. Because these bounded fields are each carried in one byte on the wire (see Message Format), K <span class="bcp14">MUST</span> be an integer from 1 to 256 inclusive.<a href="#section-2.1-1.10.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.11">Collection:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.12">
+            <p id="section-2.1-1.12.1">A group of Devices, identified by a unique Collection Key, known to a Controller.<a href="#section-2.1-1.12.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.13">Collection Key:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.14">
+            <p id="section-2.1-1.14.1">An unsigned integer in the range 0 to K-1, unique among the Collections known to a Controller, used to identify a Collection.<a href="#section-2.1-1.14.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.15">Device Key:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.16">
+            <p id="section-2.1-1.16.1">An unsigned integer in the range 0 to K-1, unique among the Devices within a single Collection, used to identify a Device. Two Devices in different Collections may share the same Device Key.<a href="#section-2.1-1.16.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.17">Action:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.18">
+            <p id="section-2.1-1.18.1">A capability of a Device that a Controller can elicit, for example turning on an LED.<a href="#section-2.1-1.18.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.19">Action Key:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.20">
+            <p id="section-2.1-1.20.1">An unsigned integer in the range 0 to K-1, unique among the Actions registered for a single Device, used to identify an Action once a Controller has Paired with that Device.<a href="#section-2.1-1.20.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.21">Root Action Key:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.22">
+            <p id="section-2.1-1.22.1">An unsigned integer in the range 0 to 255, assigned by a Device to identify one of its own Actions. Unlike Action Key, Root Action Key is not bounded by K: a Device's Root Action Keys need not be contiguous, and a Device may have more Actions than a given Controller's K. See <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span> for how a Controller addresses a Device's Actions when they outnumber K.<a href="#section-2.1-1.22.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.23">Temporary Device Key:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.24">
+            <p id="section-2.1-1.24.1">An unsigned integer in the range 0 to K-1, assigned by a Controller during the Device Configuration Phase to temporarily identify a Device that has not yet been assigned a Device Key.<a href="#section-2.1-1.24.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.25">Device Configuration Phase:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.26">
+            <p id="section-2.1-1.26.1">Also referred to as "Discovery". The process by which a Controller discovers Devices and assigns each a Collection Key and a Device Key.<a href="#section-2.1-1.26.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.27">Action Configuration Phase:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.28">
+            <p id="section-2.1-1.28.1">Also referred to as "Pairing". The process by which a Controller, having opened a persistent connection to a single Device, discovers that Device's Actions and assigns each an Action Key.<a href="#section-2.1-1.28.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.29">Commanding:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.30">
+            <p id="section-2.1-1.30.1">The process by which a Controller elicits a Device to perform an Action, outside of the Device Configuration Phase or Action Configuration Phase.<a href="#section-2.1-1.30.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.31">Temporary Device Map:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.32">
+            <p id="section-2.1-1.32.1">A construct held in a Controller's volatile memory, mapping each currently assigned Temporary Device Key to the Network ID of the Device holding it, for the duration of a single Device Configuration Phase.<a href="#section-2.1-1.32.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.33">Device Map:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.34">
+            <p id="section-2.1-1.34.1">A construct held in a Controller's persistent storage, mapping each Device Key, within a Collection, to the last known Network ID of the Device holding it. A Device's Network ID is not assumed to remain stable; see <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span> for the reconciliation mechanism used to recover a Device's current Network ID.<a href="#section-2.1-1.34.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.35">Action Map:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.36">
+            <p id="section-2.1-1.36.1">A construct, held independently in the persistent storage of both a Controller and a Device, mapping each Action Key to the corresponding Root Action Key.<a href="#section-2.1-1.36.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.37">Network ID:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.38">
+            <p id="section-2.1-1.38.1">The address of a Device on the Control Network, for example an IP address.<a href="#section-2.1-1.38.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.39">Status Code:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.40">
+            <p id="section-2.1-1.40.1">A single-byte value, carried in most response messages, indicating the outcome of the request being acknowledged. See <span><a href="#msgformat" class="internal xref">Message Format</a> (<a href="#msgformat" class="auto internal xref">Section 4</a>)</span>.<a href="#section-2.1-1.40.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-2.1-1.41">Reconciliation:</dt>
+          <dd style="margin-left: 1.5em" id="section-2.1-1.42">
+            <p id="section-2.1-1.42.1">The process by which a Controller recovers from an operation that failed or timed out, by querying whether a Device holding a specific Collection Key and Device Key pair can still be located. See <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>.<a href="#section-2.1-1.42.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="overview">
+<section id="section-3">
+      <h2 id="name-protocol-overview">
+<a href="#section-3" class="section-number selfRef">3. </a><a href="#name-protocol-overview" class="section-name selfRef">Protocol Overview</a>
+      </h2>
+<p id="section-3-1">BCNP defines three sequential phases of interaction between a Controller and a Device: a Device Configuration Phase ("Discovery"), an Action Configuration Phase ("Pairing"), and Commanding.<a href="#section-3-1" class="pilcrow">¶</a></p>
+<p id="section-3-2">During Discovery, a Controller broadcasts a request for any Device on its network to announce itself, assigns each responding Device a Temporary Device Key, and then assigns each a permanent Collection Key and Device Key, recording the mapping in its Device Map. A Device transitions from DEV_STATE_UNASSIGNED to DEV_STATE_ASSIGNED as a result.<a href="#section-3-2" class="pilcrow">¶</a></p>
+<p id="section-3-3">During Pairing, a Controller opens a single persistent connection to one already-assigned Device, discovers the Actions that Device can perform, and assigns each an Action Key. The Device transitions to DEV_STATE_PAIRED for the duration of this connection, returning to DEV_STATE_ASSIGNED once it ends.<a href="#section-3-3" class="pilcrow">¶</a></p>
+<p id="section-3-4">During Commanding, a Controller, addressing a Device by Collection Key, Device Key, and Action Key, elicits a single Action. Commanding requires no persistent connection, and no prior phase beyond Discovery, plus Pairing if the desired Action has not already been assigned an Action Key.<a href="#section-3-4" class="pilcrow">¶</a></p>
+<p id="section-3-5">A Controller has a corresponding state machine: CTRL_STATE_IDLE, from which Discovery or Pairing may be entered and Commands may be issued; CTRL_STATE_DISCOVERING, active for the duration of a Device Configuration Phase; and CTRL_STATE_PAIRED, active for the duration of an Action Configuration Phase. <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span> specifies the complete state machines for both Controller and Device, and the procedures governing every transition.<a href="#section-3-5" class="pilcrow">¶</a></p>
+<div id="deployment-model">
+<section id="section-3.1">
+        <h3 id="name-deployment-model">
+<a href="#section-3.1" class="section-number selfRef">3.1. </a><a href="#name-deployment-model" class="section-name selfRef">Deployment Model</a>
+        </h3>
+<p id="section-3.1-1">BCNP assumes a Controller establishes its own wireless network, and that Devices join that network through some out-of-band mechanism before engaging in BCNP; the specifics of that mechanism are out of scope for this document. This document further assumes a single Controller per Control Network: a Device holds at most one Collection Key and Device Key at a time, and this document does not define behavior for a second Controller attempting to configure a Device already claimed by another. Both of these are scoping decisions rather than protocol requirements as such; see <span><a href="#security" class="internal xref">Security Considerations</a> (<a href="#security" class="auto internal xref">Section 6</a>)</span> for the trust model this deployment assumption enables.<a href="#section-3.1-1" class="pilcrow">¶</a></p>
+<p id="section-3.1-2">Because Collection Key, Device Key, and Action Key are each bounded to the range 0 to K-1 (see "K" in <a href="#terminology" class="auto internal xref">Section 2.1</a>), a single Controller can, per Collection, address at most K Devices, each with at most K Actions available for direct addressing, for a system-wide ceiling of K x K addressable Devices. This is a deliberate consequence of BCNP's design (see <span><a href="#intro" class="internal xref">Introduction</a> (<a href="#intro" class="auto internal xref">Section 1</a>)</span>), not an oversight.<a href="#section-3.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="msgformat">
+<section id="section-4">
+      <h2 id="name-message-format">
+<a href="#section-4" class="section-number selfRef">4. </a><a href="#name-message-format" class="section-name selfRef">Message Format</a>
+      </h2>
+<p id="section-4-1">BCNP depends on a reliable, connection-oriented transport; this document assumes TCP <span>[<a href="#RFC9293" class="cite xref">RFC9293</a>]</span>. All BCNP messages consist of a fixed 6-byte header, optionally followed by a payload whose shape is determined entirely by the Message Type in that header.<a href="#section-4-1" class="pilcrow">¶</a></p>
+<div id="header">
+<section id="section-4.1">
+        <h3 id="name-header">
+<a href="#section-4.1" class="section-number selfRef">4.1. </a><a href="#name-header" class="section-name selfRef">Header</a>
+        </h3>
+<div class="alignLeft art-text artwork" id="section-4.1-1">
+<pre>
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|     Magic     |    Version    | Message Type  |  Sequence ID  |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|        Payload Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+</pre><a href="#section-4.1-1" class="pilcrow">¶</a>
+</div>
+<span class="break"></span><dl class="dlParallel" id="section-4.1-2">
+          <dt id="section-4.1-2.1">Magic:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.2">
+            <p id="section-4.1-2.2.1">Fixed to 0xBC. A receiver <span class="bcp14">MUST</span> discard, without further processing, any message whose Magic byte is not 0xBC.<a href="#section-4.1-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-2.3">Version:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.4">
+            <p id="section-4.1-2.4.1">The protocol version in use. A receiver <span class="bcp14">MUST</span> reject a message carrying a Version it does not support, responding where applicable with Status Code ERR_VERSION.<a href="#section-4.1-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-2.5">Message Type:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.6">
+            <p id="section-4.1-2.6.1">Identifies the message; see "Message Types" below. A receiver <span class="bcp14">MUST</span> discard, without further processing, any message carrying a Message Type this document does not assign.<a href="#section-4.1-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-2.7">Sequence ID:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.8">
+            <p id="section-4.1-2.8.1">Set by the sender of a request. A response <span class="bcp14">MUST</span> echo the same value as the request it answers. BCNP is synchronous: an implementation <span class="bcp14">MUST NOT</span> have more than one request outstanding at a time on a single connection. Under this constraint, wraparound of this one-byte field cannot cause a response to be mismatched to the wrong request.<a href="#section-4.1-2.8.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-4.1-2.9">Payload Length:</dt>
+          <dd style="margin-left: 1.5em" id="section-4.1-2.10">
+            <p id="section-4.1-2.10.1">The number of bytes following the header, encoded in network byte order (big-endian), 0 to 65535.<a href="#section-4.1-2.10.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="notation">
+<section id="section-4.2">
+        <h3 id="name-notation">
+<a href="#section-4.2" class="section-number selfRef">4.2. </a><a href="#name-notation" class="section-name selfRef">Notation</a>
+        </h3>
+<p id="section-4.2-1">The tables below describe each message's payload as an ordered sequence of fields. <code>[field_name:N]</code> denotes a field occupying exactly N bytes at that position; fields are concatenated with no delimiters, since both sides already know the expected shape from the Message Type. <code>+ JSON tail</code> denotes that all remaining bytes, up to Payload Length, are one UTF-8 encoded JSON value (see "JSON Schema" below). <code>count x [...]</code> denotes that the bracketed group repeats <code>count</code> times.<a href="#section-4.2-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="status-codes">
+<section id="section-4.3">
+        <h3 id="name-status-codes">
+<a href="#section-4.3" class="section-number selfRef">4.3. </a><a href="#name-status-codes" class="section-name selfRef">Status Codes</a>
+        </h3>
+<p id="section-4.3-1">Most response messages carry a one-byte Status Code as the first byte of their payload. Codes of local or synthesized origin are never serialized; they are included here to keep the code space in one place, and are cross-referenced from <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>, where the controller behavior that produces them is specified.<a href="#section-4.3-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-1">
+          <caption><a href="#table-1" class="selfRef">Table 1</a></caption>
+<thead>
+            <tr>
+              <th class="text-left" rowspan="1" colspan="1">Code</th>
+              <th class="text-left" rowspan="1" colspan="1">Name</th>
+              <th class="text-left" rowspan="1" colspan="1">Origin</th>
+              <th class="text-left" rowspan="1" colspan="1">Meaning</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x00</td>
+              <td class="text-left" rowspan="1" colspan="1">OK</td>
+              <td class="text-left" rowspan="1" colspan="1">wire</td>
+              <td class="text-left" rowspan="1" colspan="1">Success</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x01</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_LOCAL_NOT_FOUND</td>
+              <td class="text-left" rowspan="1" colspan="1">local</td>
+              <td class="text-left" rowspan="1" colspan="1">Never serialized; see <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x02</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_LOCAL_COLLISION</td>
+              <td class="text-left" rowspan="1" colspan="1">local</td>
+              <td class="text-left" rowspan="1" colspan="1">Never serialized; see <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x03</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_LOCAL_INVALID_STATE</td>
+              <td class="text-left" rowspan="1" colspan="1">local</td>
+              <td class="text-left" rowspan="1" colspan="1">Never serialized; see <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x04</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_TIMEOUT</td>
+              <td class="text-left" rowspan="1" colspan="1">synthesized</td>
+              <td class="text-left" rowspan="1" colspan="1">Never serialized; see <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x05</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_MALFORMED</td>
+              <td class="text-left" rowspan="1" colspan="1">wire</td>
+              <td class="text-left" rowspan="1" colspan="1">The message's payload does not parse for its Message Type</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x06</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_VERSION</td>
+              <td class="text-left" rowspan="1" colspan="1">wire</td>
+              <td class="text-left" rowspan="1" colspan="1">The Version in the request is not supported</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x07</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_IDENTITY_MISMATCH</td>
+              <td class="text-left" rowspan="1" colspan="1">wire</td>
+              <td class="text-left" rowspan="1" colspan="1">The responding Device's Collection Key/Device Key does not match the request</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x08</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_REGISTER_VERIFY_FAILED</td>
+              <td class="text-left" rowspan="1" colspan="1">synthesized</td>
+              <td class="text-left" rowspan="1" colspan="1">Never serialized; see <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x09</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_ACTION_TIMEOUT</td>
+              <td class="text-left" rowspan="1" colspan="1">synthesized</td>
+              <td class="text-left" rowspan="1" colspan="1">Never serialized; see <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>
+</td>
+            </tr>
+            <tr>
+              <td class="text-left" rowspan="1" colspan="1">0x0A</td>
+              <td class="text-left" rowspan="1" colspan="1">ERR_ACTION_FAILED</td>
+              <td class="text-left" rowspan="1" colspan="1">wire</td>
+              <td class="text-left" rowspan="1" colspan="1">The Device attempted the Action and it failed</td>
+            </tr>
+          </tbody>
+        </table>
+</section>
+</div>
+<div id="message-types">
+<section id="section-4.4">
+        <h3 id="name-message-types">
+<a href="#section-4.4" class="section-number selfRef">4.4. </a><a href="#name-message-types" class="section-name selfRef">Message Types</a>
+        </h3>
+<p id="section-4.4-1">Message Type is one byte, giving 256 possible values. This document assigns 0x01 through 0x1B; the remainder are unassigned, and, per <span><a href="#iana" class="internal xref">IANA Considerations</a> (<a href="#iana" class="auto internal xref">Section 7</a>)</span>, this document establishes no registry for allocating them.<a href="#section-4.4-1" class="pilcrow">¶</a></p>
+<div id="device-configuration-phase">
+<section id="section-4.4.1">
+          <h4 id="name-device-configuration-phase">
+<a href="#section-4.4.1" class="section-number selfRef">4.4.1. </a><a href="#name-device-configuration-phase" class="section-name selfRef">Device Configuration Phase</a>
+          </h4>
+<table class="center" id="table-2">
+            <caption><a href="#table-2" class="selfRef">Table 2</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Message</th>
+                <th class="text-left" rowspan="1" colspan="1">Direction</th>
+                <th class="text-left" rowspan="1" colspan="1">Payload</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x01</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_DISCOVER</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Devices (broadcast)</td>
+                <td class="text-left" rowspan="1" colspan="1">empty</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x02</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_ANNOUNCE</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[has_keys:1]</code> + if has_keys=1: <code>[collection_key:1][device_key:1]</code> + JSON tail</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x03</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_DISCOVER_ASSIGN</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[temp_device_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x04</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_DISCOVER_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x05</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_REGISTER_DEVICE</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[collection_key:1][temp_device_key:1][new_device_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x06</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_REGISTER_DEVICE_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x07</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_FORGET_DEVICE</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[collection_key:1][device_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x08</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_FORGET_DEVICE_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x09</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_END_DISCOVER</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">empty</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x0A</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_END_DISCOVER_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code>
+</td>
+              </tr>
+            </tbody>
+          </table>
+</section>
+</div>
+<div id="action-configuration-phase">
+<section id="section-4.4.2">
+          <h4 id="name-action-configuration-phase">
+<a href="#section-4.4.2" class="section-number selfRef">4.4.2. </a><a href="#name-action-configuration-phase" class="section-name selfRef">Action Configuration Phase</a>
+          </h4>
+<table class="center" id="table-3">
+            <caption><a href="#table-3" class="selfRef">Table 3</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Message</th>
+                <th class="text-left" rowspan="1" colspan="1">Direction</th>
+                <th class="text-left" rowspan="1" colspan="1">Payload</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x0B</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_PAIR</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[collection_key:1][device_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x0C</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_PAIR_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x0D</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_DISCOVER_ACTION</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[root_action_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x0E</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_ANNOUNCE_ACTION</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[root_action_key:1]</code> + JSON tail</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x0F</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_DISCOVER_ALL_ACTIONS</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">empty</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x10</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_ANNOUNCE_ALL_ACTIONS</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">JSON array, no fixed prefix</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x11</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_REGISTER_ACTION</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[root_action_key:1][new_action_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x12</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_REGISTER_ACTION_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x13</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_FORGET_ACTION</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[action_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x14</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_FORGET_ACTION_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x15</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_END_PAIR</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">empty</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x16</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_END_PAIR_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code>
+</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-4.4.2-2">Messages 0x0D through 0x16 ride the single persistent connection opened by BCNP_PAIR; none carry Collection Key or Device Key, since the connection itself identifies the Device unambiguously.<a href="#section-4.4.2-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="command-mode">
+<section id="section-4.4.3">
+          <h4 id="name-command-mode">
+<a href="#section-4.4.3" class="section-number selfRef">4.4.3. </a><a href="#name-command-mode" class="section-name selfRef">Command Mode</a>
+          </h4>
+<table class="center" id="table-4">
+            <caption><a href="#table-4" class="selfRef">Table 4</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Message</th>
+                <th class="text-left" rowspan="1" colspan="1">Direction</th>
+                <th class="text-left" rowspan="1" colspan="1">Payload</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x17</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_COMMAND</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Device</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[collection_key:1][device_key:1][action_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x18</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_COMMAND_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code> (final result: OK or ERR_ACTION_FAILED)</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x19</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_COMMAND_ACCEPT</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[status:1]</code> (immediate receipt confirmation)</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-4.4.3-2">BCNP_COMMAND_ACCEPT (0x19) is sent before BCNP_COMMAND_ACK (0x18) in every exchange, despite its higher Type value; 0x18 retained the Type value assigned to the single acknowledgment in an earlier version of this protocol, and 0x19 was appended rather than renumbering it. Both responses to a single BCNP_COMMAND <span class="bcp14">MUST</span> echo that request's Sequence ID.<a href="#section-4.4.3-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="reconciliation-mode">
+<section id="section-4.4.4">
+          <h4 id="name-reconciliation-mode">
+<a href="#section-4.4.4" class="section-number selfRef">4.4.4. </a><a href="#name-reconciliation-mode" class="section-name selfRef">Reconciliation Mode</a>
+          </h4>
+<table class="center" id="table-5">
+            <caption><a href="#table-5" class="selfRef">Table 5</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Message</th>
+                <th class="text-left" rowspan="1" colspan="1">Direction</th>
+                <th class="text-left" rowspan="1" colspan="1">Payload</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x1A</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_IDENTITY_CHECK</td>
+                <td class="text-left" rowspan="1" colspan="1">Controller to Devices (broadcast)</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[count:2]</code> + count x <code>[collection_key:1][device_key:1]</code>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">0x1B</td>
+                <td class="text-left" rowspan="1" colspan="1">BCNP_IDENTITY_CHECK_ACK</td>
+                <td class="text-left" rowspan="1" colspan="1">Device to Controller</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <code>[collection_key:1][device_key:1]</code>
+</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-4.4.4-2"><code>count</code> is encoded in network byte order. A Device receiving BCNP_IDENTITY_CHECK <span class="bcp14">MUST</span> validate that <code>count * 2 + 2</code> equals Payload Length before iterating the list; it <span class="bcp14">MUST</span> discard the message without further processing if this check fails. A Device sends BCNP_IDENTITY_CHECK_ACK only if one of the pairs in the list matches its own Collection Key and Device Key; a Device that finds no match <span class="bcp14">MUST NOT</span> respond.<a href="#section-4.4.4-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="json-schema">
+<section id="section-4.5">
+        <h3 id="name-json-schema">
+<a href="#section-4.5" class="section-number selfRef">4.5. </a><a href="#name-json-schema" class="section-name selfRef">JSON Schema</a>
+        </h3>
+<p id="section-4.5-1">BCNP_ANNOUNCE, BCNP_ANNOUNCE_ACTION, and BCNP_ANNOUNCE_ALL_ACTIONS each carry a JSON tail, encoded in UTF-8 per <span>[<a href="#RFC8259" class="cite xref">RFC8259</a>]</span>. Two distinct shapes are used.<a href="#section-4.5-1" class="pilcrow">¶</a></p>
+<div id="device-descriptor">
+<section id="section-4.5.1">
+          <h4 id="name-device-descriptor">
+<a href="#section-4.5.1" class="section-number selfRef">4.5.1. </a><a href="#name-device-descriptor" class="section-name selfRef">Device Descriptor</a>
+          </h4>
+<p id="section-4.5.1-1">Used as the JSON tail of BCNP_ANNOUNCE.<a href="#section-4.5.1-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-6">
+            <caption><a href="#table-6" class="selfRef">Table 6</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Field</th>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Presence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">name</td>
+                <td class="text-left" rowspan="1" colspan="1">string</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <span class="bcp14">REQUIRED</span>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">description</td>
+                <td class="text-left" rowspan="1" colspan="1">string</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <span class="bcp14">OPTIONAL</span>
+</td>
+              </tr>
+            </tbody>
+          </table>
+</section>
+</div>
+<div id="action-descriptor">
+<section id="section-4.5.2">
+          <h4 id="name-action-descriptor">
+<a href="#section-4.5.2" class="section-number selfRef">4.5.2. </a><a href="#name-action-descriptor" class="section-name selfRef">Action Descriptor</a>
+          </h4>
+<p id="section-4.5.2-1">Used as the JSON tail of BCNP_ANNOUNCE_ACTION, and as each element of the JSON array carried by BCNP_ANNOUNCE_ALL_ACTIONS.<a href="#section-4.5.2-1" class="pilcrow">¶</a></p>
+<table class="center" id="table-7">
+            <caption><a href="#table-7" class="selfRef">Table 7</a></caption>
+<thead>
+              <tr>
+                <th class="text-left" rowspan="1" colspan="1">Field</th>
+                <th class="text-left" rowspan="1" colspan="1">Type</th>
+                <th class="text-left" rowspan="1" colspan="1">Presence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">name</td>
+                <td class="text-left" rowspan="1" colspan="1">string</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <span class="bcp14">REQUIRED</span>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">description</td>
+                <td class="text-left" rowspan="1" colspan="1">string</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <span class="bcp14">OPTIONAL</span>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">duration</td>
+                <td class="text-left" rowspan="1" colspan="1">integer</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <span class="bcp14">OPTIONAL</span>
+</td>
+              </tr>
+              <tr>
+                <td class="text-left" rowspan="1" colspan="1">root_action_key</td>
+                <td class="text-left" rowspan="1" colspan="1">integer, 0-255</td>
+                <td class="text-left" rowspan="1" colspan="1">
+                  <span class="bcp14">REQUIRED</span> in BCNP_ANNOUNCE_ALL_ACTIONS array elements only</td>
+              </tr>
+            </tbody>
+          </table>
+<p id="section-4.5.2-3"><code>duration</code> is expressed in milliseconds. If absent, a Controller <span class="bcp14">MUST</span> fall back to a default timeout when awaiting the Action's completion, rather than treating its absence as an error (see <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>). <code>root_action_key</code> <span class="bcp14">MUST NOT</span> be present in BCNP_ANNOUNCE_ACTION's JSON tail, where it is instead carried by the fixed <code>[root_action_key:1]</code> field preceding it; its presence is <span class="bcp14">REQUIRED</span> in each element of BCNP_ANNOUNCE_ALL_ACTIONS's array, which has no such fixed prefix.<a href="#section-4.5.2-3" class="pilcrow">¶</a></p>
+<p id="section-4.5.2-4">Field names use snake_case throughout, matching the naming convention of the fixed binary fields defined elsewhere in this section.<a href="#section-4.5.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="protoop">
+<section id="section-5">
+      <h2 id="name-protocol-operation">
+<a href="#section-5" class="section-number selfRef">5. </a><a href="#name-protocol-operation" class="section-name selfRef">Protocol Operation</a>
+      </h2>
+<div id="controller-states">
+<section id="section-5.1">
+        <h3 id="name-controller-states">
+<a href="#section-5.1" class="section-number selfRef">5.1. </a><a href="#name-controller-states" class="section-name selfRef">Controller States</a>
+        </h3>
+<p id="section-5.1-1">A Controller is, at any time, in exactly one of three states.<a href="#section-5.1-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-5.1-2">
+          <dt id="section-5.1-2.1">CTRL_STATE_IDLE:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.1-2.2">
+            <p id="section-5.1-2.2.1">The Controller's resting state. A Controller in this state <span class="bcp14">MAY</span> issue a Command, entering no other state as a result once the exchange completes. A Controller in this state <span class="bcp14">MAY</span> enter CTRL_STATE_DISCOVERING by initiating a Device Configuration Phase, or CTRL_STATE_PAIRED by initiating an Action Configuration Phase.<a href="#section-5.1-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.1-2.3">CTRL_STATE_DISCOVERING:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.1-2.4">
+            <p id="section-5.1-2.4.1">Active for the duration of a Device Configuration Phase (see "Discovery Procedure" below). A Controller in this state <span class="bcp14">MUST NOT</span> issue a Command, and <span class="bcp14">MUST</span> send and accept only Device Configuration Phase messages. A Controller returns to CTRL_STATE_IDLE once the Device Configuration Phase ends.<a href="#section-5.1-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.1-2.5">CTRL_STATE_PAIRED:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.1-2.6">
+            <p id="section-5.1-2.6.1">Active for the duration of an Action Configuration Phase, over the single persistent connection opened by BCNP_PAIR (see "Pairing Procedure" below). A Controller in this state <span class="bcp14">MUST NOT</span> issue a Command, and <span class="bcp14">MUST</span> send and accept only Action Configuration Phase messages on that connection. A Controller returns to CTRL_STATE_IDLE once the persistent connection closes.<a href="#section-5.1-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="device-states">
+<section id="section-5.2">
+        <h3 id="name-device-states">
+<a href="#section-5.2" class="section-number selfRef">5.2. </a><a href="#name-device-states" class="section-name selfRef">Device States</a>
+        </h3>
+<p id="section-5.2-1">A Device is, at any time, in exactly one of three states, persisted across restarts except where noted.<a href="#section-5.2-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-5.2-2">
+          <dt id="section-5.2-2.1">DEV_STATE_UNASSIGNED:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.2-2.2">
+            <p id="section-5.2-2.2.1">The Device's initial state, and the state a Device returns to after being forgotten. A Device in this state listens for BCNP_DISCOVER and <span class="bcp14">MUST</span> respond with BCNP_ANNOUNCE. A Device in this state <span class="bcp14">MUST</span> evaluate any BCNP_IDENTITY_CHECK it receives (it will never match, holding no Collection Key or Device Key) and <span class="bcp14">MUST</span> silently discard a BCNP_COMMAND. A Device transitions to DEV_STATE_ASSIGNED on receiving a BCNP_REGISTER_DEVICE addressed to its currently held Temporary Device Key.<a href="#section-5.2-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.2-2.3">DEV_STATE_ASSIGNED:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.2-2.4">
+            <p id="section-5.2-2.4.1">A Device holding a Collection Key and Device Key. A Device in this state <span class="bcp14">MUST</span> respond to BCNP_COMMAND (see "Command Procedure" below), <span class="bcp14">MUST</span> respond to BCNP_DISCOVER with a BCNP_ANNOUNCE carrying its current Collection Key and Device Key, and <span class="bcp14">MUST</span> evaluate BCNP_IDENTITY_CHECK, responding with BCNP_IDENTITY_CHECK_ACK if the message includes its own Collection Key and Device Key pair. A Device in this state transitions to DEV_STATE_PAIRED on receiving a BCNP_PAIR that matches its held Collection Key and Device Key, and to DEV_STATE_UNASSIGNED on receiving a matching BCNP_FORGET_DEVICE. A Device's handling of a BCNP_REGISTER_DEVICE that does not exactly match its already-held keys is specified under "Idempotency and Retry Safety" below.<a href="#section-5.2-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.2-2.5">DEV_STATE_PAIRED:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.2-2.6">
+            <p id="section-5.2-2.6.1">A Device with a single persistent connection open to a Controller, entered by way of a successful BCNP_PAIR. A Device in this state <span class="bcp14">MUST NOT</span> act upon any message other than an Action Configuration Phase message received via its open persistent connection; in particular, it <span class="bcp14">MUST NOT</span> act upon a BCNP_COMMAND, regardless of source. A Device in this state <span class="bcp14">MUST</span> close the connection and return to DEV_STATE_ASSIGNED after receiving BCNP_END_PAIR, or after an idle period with no message received from the Controller exceeding a locally configured threshold; the idle period <span class="bcp14">MUST</span> reset on any message received from the Controller, not merely on connection establishment. A Device <span class="bcp14">MUST NOT</span> persist DEV_STATE_PAIRED across a restart: a restarted Device always begins in DEV_STATE_UNASSIGNED or DEV_STATE_ASSIGNED depending on the Collection Key and Device Key recorded in its persistent storage. A Device's handling of a BCNP_PAIR received on the already-open connection is specified under "Idempotency and Retry Safety" below.<a href="#section-5.2-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="unrecognized-messages">
+<section id="section-5.3">
+        <h3 id="name-unrecognized-messages">
+<a href="#section-5.3" class="section-number selfRef">5.3. </a><a href="#name-unrecognized-messages" class="section-name selfRef">Unrecognized Messages</a>
+        </h3>
+<p id="section-5.3-1">Except where a Controller or Device state's description above specifies otherwise, an implementation <span class="bcp14">MUST</span> silently discard any message that does not apply to its current state.<a href="#section-5.3-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="local-and-synthesized-errors">
+<section id="section-5.4">
+        <h3 id="name-local-and-synthesized-error">
+<a href="#section-5.4" class="section-number selfRef">5.4. </a><a href="#name-local-and-synthesized-error" class="section-name selfRef">Local and Synthesized Errors</a>
+        </h3>
+<p id="section-5.4-1">Six Status Codes are never carried on the wire: a Controller produces each internally, as its own conclusion, without any corresponding message from a Device. Four are explained here; the remaining two, ERR_REGISTER_VERIFY_FAILED and ERR_ACTION_TIMEOUT, are explained where they naturally arise, under "Register Device Verification" and "Command Procedure" respectively.<a href="#section-5.4-1" class="pilcrow">¶</a></p>
+<span class="break"></span><dl class="dlParallel" id="section-5.4-2">
+          <dt id="section-5.4-2.1">ERR_LOCAL_NOT_FOUND:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.4-2.2">
+            <p id="section-5.4-2.2.1">Produced when an operation references a Collection Key, Device Key, or Action Key that is not present in the Controller's Device Map or Action Map. Because these maps are authoritative for a Controller operating under the single-Controller assumption in <span><a href="#overview" class="internal xref">Protocol Overview</a> (<a href="#overview" class="auto internal xref">Section 3</a>)</span>, this check <span class="bcp14">MUST</span> be performed, and <span class="bcp14">MUST</span> fail, before any message is sent; no Device is contacted.<a href="#section-5.4-2.2.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.4-2.3">ERR_LOCAL_COLLISION:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.4-2.4">
+            <p id="section-5.4-2.4.1">Produced when a Register operation's target, the new Device Key in BCNP_REGISTER_DEVICE or the new Action Key in BCNP_REGISTER_ACTION, is already occupied in the Controller's Device Map or Action Map. As with ERR_LOCAL_NOT_FOUND, this check <span class="bcp14">MUST</span> be performed locally before any message is sent.<a href="#section-5.4-2.4.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.4-2.5">ERR_LOCAL_INVALID_STATE:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.4-2.6">
+            <p id="section-5.4-2.6.1">Produced when a Probe is invoked that does not apply to the Controller's current state (for example, a Register Probe invoked while CTRL_STATE_IDLE; see "Controller States" above). No message is sent.<a href="#section-5.4-2.6.1" class="pilcrow">¶</a></p>
+</dd>
+          <dd class="break"></dd>
+<dt id="section-5.4-2.7">ERR_TIMEOUT:</dt>
+          <dd style="margin-left: 1.5em" id="section-5.4-2.8">
+            <p id="section-5.4-2.8.1">Produced when a Controller does not receive an expected response to a message it sent, within its configured timeout for that exchange. Unlike the three codes above, this follows an attempt that did reach the network; see "Reconciliation" below for how a Controller acts on it.<a href="#section-5.4-2.8.1" class="pilcrow">¶</a></p>
+</dd>
+        <dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="discovery-procedure">
+<section id="section-5.5">
+        <h3 id="name-discovery-procedure">
+<a href="#section-5.5" class="section-number selfRef">5.5. </a><a href="#name-discovery-procedure" class="section-name selfRef">Discovery Procedure</a>
+        </h3>
+<p id="section-5.5-1">A Controller enters CTRL_STATE_DISCOVERING by broadcasting BCNP_DISCOVER to its network, using a broadcast mechanism appropriate to its network layer rather than a connection to each address individually. Every Device in DEV_STATE_UNASSIGNED or DEV_STATE_ASSIGNED that receives this broadcast responds with BCNP_ANNOUNCE, opening its own short-lived connection to do so; a Device in DEV_STATE_PAIRED does not respond. Every message in this phase is sent over its own short-lived connection, opened for that one exchange and closed afterward; a Controller <span class="bcp14">MUST NOT</span> hold a connection open across multiple Discovery-phase exchanges with the same Device.<a href="#section-5.5-1" class="pilcrow">¶</a></p>
+<p id="section-5.5-2">For each responding Device, the Controller assigns a Temporary Device Key by sending BCNP_DISCOVER_ASSIGN, recording the Device's Network ID against that key in its Temporary Device Map on receiving BCNP_DISCOVER_ACK.<a href="#section-5.5-2" class="pilcrow">¶</a></p>
+<p id="section-5.5-3">Once addressed by its Temporary Device Key, a Controller assigns a Device a permanent Collection Key and Device Key by sending BCNP_REGISTER_DEVICE. On receiving BCNP_REGISTER_DEVICE_ACK with Status Code OK, a Controller <span class="bcp14">MUST</span> verify the registration before recording it in its Device Map, using the mechanism described under "Idempotency and Retry Safety" below, rather than committing on the acknowledgment alone.<a href="#section-5.5-3" class="pilcrow">¶</a></p>
+<p id="section-5.5-4">A Controller removes a Device's registration by sending BCNP_FORGET_DEVICE, addressed by that Device's Collection Key and Device Key as currently recorded in its Device Map, removing the corresponding entry on receiving BCNP_FORGET_DEVICE_ACK.<a href="#section-5.5-4" class="pilcrow">¶</a></p>
+<p id="section-5.5-5">A Controller ends a Device Configuration Phase by sending BCNP_END_DISCOVER individually to every Device remaining in its Temporary Device Map. Once every such Device has responded with BCNP_END_DISCOVER_ACK, the Controller discards its Temporary Device Map and returns to CTRL_STATE_IDLE.<a href="#section-5.5-5" class="pilcrow">¶</a></p>
+<div id="key-addressing-and-pagination">
+<section id="section-5.5.1">
+          <h4 id="name-key-addressing-and-paginati">
+<a href="#section-5.5.1" class="section-number selfRef">5.5.1. </a><a href="#name-key-addressing-and-paginati" class="section-name selfRef">Key Addressing and Pagination</a>
+          </h4>
+<p id="section-5.5.1-1">Temporary Device Key here, and Root Action Key during Pairing (see "Pairing Procedure" below), may both need to address more candidates than K. Both use the same mechanism: a Controller maintains an ordered list of candidates wider than K, of which only a window of K (one page) is addressable by a Key Probe at a time.<a href="#section-5.5.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.5.1-2">The Device probe, which selects the current Device context in CTRL_STATE_IDLE, takes on a different meaning in CTRL_STATE_DISCOVERING and during Action discovery within CTRL_STATE_PAIRED: invoked without a Key Probe, it advances to the next page. Paging wraps: invoking it past the last page, whether full or partial, returns to the first page.<a href="#section-5.5.1-2" class="pilcrow">¶</a></p>
+<p id="section-5.5.1-3">Here, advancing the page reassigns Temporary Device Key values 0 to K-1 to the next page's Devices by sending each a fresh BCNP_DISCOVER_ASSIGN, using the Network ID already learned from that Device's BCNP_ANNOUNCE; a Controller <span class="bcp14">MUST NOT</span> need to re-broadcast BCNP_DISCOVER to advance a page. Devices outside the current page are simply not addressed until the Controller pages back to them.<a href="#section-5.5.1-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+<div id="pairing-procedure">
+<section id="section-5.6">
+        <h3 id="name-pairing-procedure">
+<a href="#section-5.6" class="section-number selfRef">5.6. </a><a href="#name-pairing-procedure" class="section-name selfRef">Pairing Procedure</a>
+        </h3>
+<p id="section-5.6-1">A Controller enters CTRL_STATE_PAIRED by sending BCNP_PAIR to a Device already recorded in its Device Map, opening the single persistent connection that remains open for the duration of this phase. BCNP_PAIR carries the Collection Key and Device Key the Controller believes it is addressing; a Device receiving it <span class="bcp14">MUST</span> compare these against its own held Collection Key and Device Key and reject with ERR_IDENTITY_MISMATCH on any mismatch, rather than pairing with whichever Controller happened to reach it.<a href="#section-5.6-1" class="pilcrow">¶</a></p>
+<p id="section-5.6-2">Once paired, a Controller queries a single Action by sending BCNP_DISCOVER_ACTION with the Action's Root Action Key, resolved from the current page if pagination is in use (see "Key Addressing and Pagination" above), receiving its metadata back in BCNP_ANNOUNCE_ACTION. A Controller queries every Action a Device offers at once by sending BCNP_DISCOVER_ALL_ACTIONS, receiving the full set back in a single BCNP_ANNOUNCE_ALL_ACTIONS; this exchange is not subject to pagination, since it addresses no single Action Key.<a href="#section-5.6-2" class="pilcrow">¶</a></p>
+<p id="section-5.6-3">A Controller assigns an Action Key to a Device's Action by sending BCNP_REGISTER_ACTION, and removes an assignment by sending BCNP_FORGET_ACTION, addressed by the already-assigned Action Key. As with BCNP_REGISTER_DEVICE, a Controller <span class="bcp14">MUST</span> verify a BCNP_REGISTER_ACTION_ACK carrying Status Code OK using the mechanism described under "Idempotency and Retry Safety" below before recording it.<a href="#section-5.6-3" class="pilcrow">¶</a></p>
+<p id="section-5.6-4">A Controller ends an Action Configuration Phase by sending BCNP_END_PAIR over the open connection, closing the connection on receiving BCNP_END_PAIR_ACK and returning to CTRL_STATE_IDLE. A Device's own timeout and connection-loss behavior while paired is specified under "Device States" above.<a href="#section-5.6-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="command-procedure">
+<section id="section-5.7">
+        <h3 id="name-command-procedure">
+<a href="#section-5.7" class="section-number selfRef">5.7. </a><a href="#name-command-procedure" class="section-name selfRef">Command Procedure</a>
+        </h3>
+<p id="section-5.7-1">A Controller in CTRL_STATE_IDLE elicits an Action by sending BCNP_COMMAND, addressed by Collection Key, Device Key, and Action Key, over its own short-lived connection. A Controller <span class="bcp14">MUST NOT</span> issue a further Command, or enter CTRL_STATE_DISCOVERING or CTRL_STATE_PAIRED, until the exchange completes or fails.<a href="#section-5.7-1" class="pilcrow">¶</a></p>
+<p id="section-5.7-2">A Device receiving BCNP_COMMAND responds immediately with BCNP_COMMAND_ACCEPT, before performing the Action, to confirm receipt; Status Code OK indicates the Device will attempt the Action, and any other code indicates outright rejection, in which case no further message follows. Once the Action completes, the Device sends BCNP_COMMAND_ACK carrying the outcome: Status Code OK on success, or ERR_ACTION_FAILED if the Action was attempted and did not succeed. Both messages <span class="bcp14">MUST</span> echo the Sequence ID of the BCNP_COMMAND they answer.<a href="#section-5.7-2" class="pilcrow">¶</a></p>
+<p id="section-5.7-3">A Controller awaits BCNP_COMMAND_ACCEPT for a short, fixed timeout; failing to receive it is handled as specified under "Idempotency and Retry Safety" below. Once BCNP_COMMAND_ACCEPT has been received, a Controller awaits BCNP_COMMAND_ACK for a duration derived from the Action's declared duration (see "JSON Schema" in Message Format) plus a grace period, or for a locally configured default duration if the Action declared none; failing to receive it within that window is a distinct condition, ERR_ACTION_TIMEOUT, also specified under "Idempotency and Retry Safety" below.<a href="#section-5.7-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="idempotency-and-retry-safety">
+<section id="section-5.8">
+        <h3 id="name-idempotency-and-retry-safet">
+<a href="#section-5.8" class="section-number selfRef">5.8. </a><a href="#name-idempotency-and-retry-safet" class="section-name selfRef">Idempotency and Retry Safety</a>
+        </h3>
+<div id="idempotent-operations">
+<section id="section-5.8.1">
+          <h4 id="name-idempotent-operations">
+<a href="#section-5.8.1" class="section-number selfRef">5.8.1. </a><a href="#name-idempotent-operations" class="section-name selfRef">Idempotent Operations</a>
+          </h4>
+<p id="section-5.8.1-1">A repeated BCNP_REGISTER_DEVICE, BCNP_REGISTER_ACTION, BCNP_FORGET_DEVICE, BCNP_FORGET_ACTION, or BCNP_PAIR that exactly matches state a Device already holds <span class="bcp14">MUST</span> be treated as successful and re-acknowledged with Status Code OK, not dropped or treated as an error; a Controller <span class="bcp14">MAY</span> therefore retry any of these operations without first determining whether an earlier attempt succeeded. A request that instead conflicts with state a Device already holds (for example, a BCNP_REGISTER_DEVICE referencing a different Collection Key or new Device Key than one already assigned to the addressed Temporary Device Key) <span class="bcp14">MUST</span> be rejected with ERR_IDENTITY_MISMATCH.<a href="#section-5.8.1-1" class="pilcrow">¶</a></p>
+<p id="section-5.8.1-2">BCNP_COMMAND is not idempotent: performing an Action twice is not, in general, equivalent to performing it once. A Controller <span class="bcp14">MUST NOT</span> automatically retry a BCNP_COMMAND that has timed out or failed; the decision to reissue it is left to whatever invoked the Controller.<a href="#section-5.8.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="reconciliation">
+<section id="section-5.8.2">
+          <h4 id="name-reconciliation">
+<a href="#section-5.8.2" class="section-number selfRef">5.8.2. </a><a href="#name-reconciliation" class="section-name selfRef">Reconciliation</a>
+          </h4>
+<p id="section-5.8.2-1">A Controller recovers from a failed or ambiguous operation by sending BCNP_IDENTITY_CHECK, querying whether a Device holding a specific Collection Key and Device Key pair, or several such pairs batched into a single message, can still be located, regardless of Network ID. A Controller triggers Reconciliation:<a href="#section-5.8.2-1" class="pilcrow">¶</a></p>
+<ul class="normal">
+<li class="normal" id="section-5.8.2-2.1">
+              <p id="section-5.8.2-2.1.1">on ERR_TIMEOUT or ERR_IDENTITY_MISMATCH while issuing a Command or during Pairing, for the specific Collection Key and Device Key pair involved;<a href="#section-5.8.2-2.1.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-5.8.2-2.2">
+              <p id="section-5.8.2-2.2.1">on ERR_TIMEOUT while removing a Device's registration with BCNP_FORGET_DEVICE, for the Collection Key and Device Key being removed;<a href="#section-5.8.2-2.2.1" class="pilcrow">¶</a></p>
+</li>
+            <li class="normal" id="section-5.8.2-2.3">
+              <p id="section-5.8.2-2.3.1">on startup, proactively, for every entry in its Device Map at once.<a href="#section-5.8.2-2.3.1" class="pilcrow">¶</a></p>
+</li>
+          </ul>
+<p id="section-5.8.2-3">A Controller does not attempt a Device's last-known Network ID again before broadcasting BCNP_IDENTITY_CHECK: the operation that triggered Reconciliation has already served that purpose. A Controller <span class="bcp14">SHOULD</span> retry BCNP_IDENTITY_CHECK up to three times, approximately two seconds apart; the exact retry count and interval are implementation-defined. If BCNP_IDENTITY_CHECK_ACK is received, confirming the Device is still reachable, a Controller <span class="bcp14">MAY</span> retry the operation that triggered Reconciliation, since Register, Forget, and Pair are all idempotent (see "Idempotent Operations" above). If no BCNP_IDENTITY_CHECK_ACK is received after these retries, the Controller removes the corresponding entry from its Device Map, freeing the Device Key for reuse. A subsequent reference to a removed entry is rejected locally with ERR_LOCAL_NOT_FOUND, without generating any further network traffic.<a href="#section-5.8.2-3" class="pilcrow">¶</a></p>
+<p id="section-5.8.2-4">Reconciliation applies only to operations addressed by Collection Key and Device Key. BCNP_DISCOVER_ASSIGN and BCNP_END_DISCOVER are addressed by Temporary Device Key or by neither, and their timeout is handled without Reconciliation: a Device that does not acknowledge BCNP_DISCOVER_ASSIGN is simply not added to the Controller's Temporary Device Map for this Device Configuration Phase, and a Controller <span class="bcp14">MAY</span> proceed without receiving BCNP_END_DISCOVER_ACK, since no permanent Collection Key or Device Key registration depends on it.<a href="#section-5.8.2-4" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="register-device-verification">
+<section id="section-5.8.3">
+          <h4 id="name-register-device-verificatio">
+<a href="#section-5.8.3" class="section-number selfRef">5.8.3. </a><a href="#name-register-device-verificatio" class="section-name selfRef">Register Device Verification</a>
+          </h4>
+<p id="section-5.8.3-1">Because Device Key is drawn from a range of only K values, shared across an entire Collection, a registration a Controller believes succeeded but that did not actually persist on the Device (for example, because the Device restarted between sending its acknowledgment and completing the write to its own persistent storage) would otherwise occupy a scarce key indefinitely, undetected. The same uncertainty arises if BCNP_REGISTER_DEVICE_ACK is never received at all: the registration may have succeeded regardless, with only the acknowledgment lost. To guard against both cases, a Controller <span class="bcp14">MUST</span>, before recording a registration in its Device Map, send BCNP_IDENTITY_CHECK for the Collection Key and Device Key just attempted: immediately on receiving BCNP_REGISTER_DEVICE_ACK carrying Status Code OK, or on ERR_TIMEOUT if no acknowledgment arrives at all. If BCNP_IDENTITY_CHECK_ACK confirms them, the Controller records the registration; otherwise, it <span class="bcp14">MUST NOT</span> record it, and <span class="bcp14">MUST</span> report ERR_REGISTER_VERIFY_FAILED. A Controller <span class="bcp14">MAY</span> safely retry BCNP_REGISTER_DEVICE after such a failure, since the operation is idempotent.<a href="#section-5.8.3-1" class="pilcrow">¶</a></p>
+<p id="section-5.8.3-2">This verification is scoped to BCNP_REGISTER_DEVICE only. BCNP_IDENTITY_CHECK can confirm a Collection Key and Device Key pair, but has no equivalent for an Action Key: there is no message in this document capable of confirming that a Device's Action Map actually holds a given Action Key to Root Action Key mapping. A Controller therefore has no way to verify a BCNP_REGISTER_ACTION_ACK the way it verifies BCNP_REGISTER_DEVICE_ACK; the same phantom-acknowledgment risk described above applies to Action Key, unguarded, and is instead discovered the way a stale BCNP_FORGET_DEVICE entry is: a subsequent Command referencing the affected Action Key fails, triggering the error handling specified in "Command Procedure" above, at which point the Controller and its operator learn the registration did not hold. This is a deliberate asymmetry rather than an oversight: Device Key is shared across an entire Collection and is worth the stronger guarantee; Action Key affects only the single Device it belongs to.<a href="#section-5.8.3-2" class="pilcrow">¶</a></p>
+<p id="section-5.8.3-3">A BCNP_FORGET_DEVICE or BCNP_FORGET_ACTION whose acknowledgment is lost requires no equivalent verification step: a Device that has genuinely forgotten an entry will not answer a later BCNP_IDENTITY_CHECK for it, so ordinary Reconciliation above already removes the resulting stale Device Map entry on next use.<a href="#section-5.8.3-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="security">
+<section id="section-6">
+      <h2 id="name-security-considerations">
+<a href="#section-6" class="section-number selfRef">6. </a><a href="#name-security-considerations" class="section-name selfRef">Security Considerations</a>
+      </h2>
+<div id="trust-model-and-scope">
+<section id="section-6.1">
+        <h3 id="name-trust-model-and-scope">
+<a href="#section-6.1" class="section-number selfRef">6.1. </a><a href="#name-trust-model-and-scope" class="section-name selfRef">Trust Model and Scope</a>
+        </h3>
+<p id="section-6.1-1">BCNP's security properties depend entirely on the deployment model described under "Deployment Model" in <span><a href="#overview" class="internal xref">Protocol Overview</a> (<a href="#overview" class="auto internal xref">Section 3</a>)</span>: a single Controller establishes its own wireless network, and Devices join that network through an out-of-band mechanism outside the scope of this document. This document treats that network, not any individual BCNP message, as the trust boundary. Every message defined in <span><a href="#msgformat" class="internal xref">Message Format</a> (<a href="#msgformat" class="auto internal xref">Section 4</a>)</span> is unauthenticated and unencrypted at the BCNP layer; whatever confidentiality and access control exist are provided entirely by the wireless network's own link-layer security (for example, WPA2 or WPA3), not by BCNP itself.<a href="#section-6.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1-2">This scoping has a direct consequence: BCNP provides no protection whatsoever against a party who is not on the Controller's wireless network. It relies entirely on that network correctly excluding anyone who has not been given credentials to join it. BCNP also provides no protection against a device that is a legitimate, credentialed member of that network but is compromised or malicious; this residual risk is discussed below.<a href="#section-6.1-2" class="pilcrow">¶</a></p>
+<p id="section-6.1-3">BCNP is not designed for, and this document makes no claims about, operation on a network the Controller does not establish and control: for example, a household's existing general-purpose WiFi network shared with other, unrelated devices and users.<a href="#section-6.1-3" class="pilcrow">¶</a></p>
+<div id="residual-risk-within-the-trust-boundary">
+<section id="section-6.1.1">
+          <h4 id="name-residual-risk-within-the-tr">
+<a href="#section-6.1.1" class="section-number selfRef">6.1.1. </a><a href="#name-residual-risk-within-the-tr" class="section-name selfRef">Residual Risk Within the Trust Boundary</a>
+          </h4>
+<p id="section-6.1.1-1">No message defined in this document carries any credential, and a Device accepts BCNP_PAIR, BCNP_REGISTER_DEVICE, BCNP_REGISTER_ACTION, and BCNP_COMMAND from any sender reachable on the Controller's network, without verifying that sender's identity beyond the checks against Collection Key and Device Key described in <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span>. Consequently, any device that has joined the Controller's wireless network (including one that is compromised, whether through a firmware vulnerability, a supply-chain issue, or any other means) can impersonate the Controller to another Device, or impersonate a Device to the Controller. This is an accepted risk for the version of BCNP specified in this document, not an oversight: WPA2/WPA3 network membership demonstrates only that a station knows the network's credentials, not that it is specifically the Controller or specifically a particular Device, and this document does not attempt to close that gap at the BCNP layer.<a href="#section-6.1.1-1" class="pilcrow">¶</a></p>
+<p id="section-6.1.1-2">A future extension to this protocol may add a per-Device shared secret, established during BCNP_REGISTER_DEVICE and used to authenticate subsequent messages to and from that Device (for example, via a keyed hash over each message), closing this gap without requiring a full public-key infrastructure. Such a mechanism would need to be paired with replay protection (for example, a Device rejecting any Sequence ID at or below the last one it accepted from its Controller), since message authentication alone does not prevent a captured, valid message from being replayed verbatim. This document does not specify either mechanism.<a href="#section-6.1.1-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="denial-of-service">
+<section id="section-6.1.2">
+          <h4 id="name-denial-of-service">
+<a href="#section-6.1.2" class="section-number selfRef">6.1.2. </a><a href="#name-denial-of-service" class="section-name selfRef">Denial of Service</a>
+          </h4>
+<p id="section-6.1.2-1">Two denial-of-service concerns are worth addressing explicitly, closed by the idle timeout and pagination mechanisms specified in <span><a href="#protoop" class="internal xref">Protocol Operation</a> (<a href="#protoop" class="auto internal xref">Section 5</a>)</span> rather than by any dedicated defense.<a href="#section-6.1.2-1" class="pilcrow">¶</a></p>
+<p id="section-6.1.2-2">A Device in DEV_STATE_PAIRED rejects Action Configuration Phase messages, and Commands, from any connection other than the one already open. Because BCNP_PAIR carries no credential (see "Residual Risk Within the Trust Boundary" above), any device on the Controller's network can open this connection by impersonating the Controller, and could hold it open indefinitely, denying the legitimate Controller access to a Device it should otherwise be able to reach. The idle timeout specified under "Device States" bounds this exposure: a Device <span class="bcp14">MUST</span> end an Action Configuration Phase after an idle period with no message received, regardless of why that silence occurred, without needing to distinguish a hostile connection from a merely idle legitimate one.<a href="#section-6.1.2-2" class="pilcrow">¶</a></p>
+<p id="section-6.1.2-3">A Controller's Temporary Device Key space is limited to K entries at a time. Without the pagination mechanism specified under "Key Addressing and Pagination," a Device Configuration Phase in which more than K Devices respond to a single BCNP_DISCOVER would leave the excess Devices permanently unable to obtain a Temporary Device Key. Pagination resolves this by design, not as a security-specific addition: every responding Device eventually becomes addressable as the Controller pages through its full candidate list.<a href="#section-6.1.2-3" class="pilcrow">¶</a></p>
+</section>
+</div>
+</section>
+</div>
+</section>
+</div>
+<div id="iana">
+<section id="section-7">
+      <h2 id="name-iana-considerations">
+<a href="#section-7" class="section-number selfRef">7. </a><a href="#name-iana-considerations" class="section-name selfRef">IANA Considerations</a>
+      </h2>
+<p id="section-7-1">BCNP does not request a port number assignment from IANA. TCP port 49400 is used as a suggested default; implementations and deployments <span class="bcp14">MAY</span> configure a different port as needed. BCNP is designed to operate on a closed, controller-hosted local network rather than requiring a globally coordinated well-known port.<a href="#section-7-1" class="pilcrow">¶</a></p>
+<p id="section-7-2">This document defines a fixed set of Message Type values and a fixed set of status/error codes. No IANA registry is established for either; both remain closed and are considered part of this specification rather than open to extension via IANA registration. Any future extension to either set requires revising this document directly.<a href="#section-7-2" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="sec-combined-references">
+<section id="section-8">
+      <h2 id="name-references">
+<a href="#section-8" class="section-number selfRef">8. </a><a href="#name-references" class="section-name selfRef">References</a>
+      </h2>
+<div id="sec-normative-references">
+<section id="section-8.1">
+        <h3 id="name-normative-references">
+<a href="#section-8.1" class="section-number selfRef">8.1. </a><a href="#name-normative-references" class="section-name selfRef">Normative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC2119">[RFC2119]</dt>
+        <dd>
+<span class="refAuthor">Bradner, S.</span>, <span class="refTitle">"Key words for use in RFCs to Indicate Requirement Levels"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 2119</span>, <span class="seriesInfo">DOI 10.17487/RFC2119</span>, <time datetime="1997-03" class="refDate">March 1997</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc2119">https://www.rfc-editor.org/rfc/rfc2119</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8174">[RFC8174]</dt>
+        <dd>
+<span class="refAuthor">Leiba, B.</span>, <span class="refTitle">"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words"</span>, <span class="seriesInfo">BCP 14</span>, <span class="seriesInfo">RFC 8174</span>, <span class="seriesInfo">DOI 10.17487/RFC8174</span>, <time datetime="2017-05" class="refDate">May 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8174">https://www.rfc-editor.org/rfc/rfc8174</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+<dt id="RFC8259">[RFC8259]</dt>
+      <dd>
+<span class="refAuthor">Bray, T., Ed.</span>, <span class="refTitle">"The JavaScript Object Notation (JSON) Data Interchange Format"</span>, <span class="seriesInfo">STD 90</span>, <span class="seriesInfo">RFC 8259</span>, <span class="seriesInfo">DOI 10.17487/RFC8259</span>, <time datetime="2017-12" class="refDate">December 2017</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc8259">https://www.rfc-editor.org/rfc/rfc8259</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+<div id="sec-informative-references">
+<section id="section-8.2">
+        <h3 id="name-informative-references">
+<a href="#section-8.2" class="section-number selfRef">8.2. </a><a href="#name-informative-references" class="section-name selfRef">Informative References</a>
+        </h3>
+<dl class="references">
+<dt id="RFC9293">[RFC9293]</dt>
+      <dd>
+<span class="refAuthor">Eddy, W., Ed.</span>, <span class="refTitle">"Transmission Control Protocol (TCP)"</span>, <span class="seriesInfo">STD 7</span>, <span class="seriesInfo">RFC 9293</span>, <span class="seriesInfo">DOI 10.17487/RFC9293</span>, <time datetime="2022-08" class="refDate">August 2022</time>, <span>&lt;<a href="https://www.rfc-editor.org/rfc/rfc9293">https://www.rfc-editor.org/rfc/rfc9293</a>&gt;</span>. </dd>
+<dd class="break"></dd>
+</dl>
+</section>
+</div>
+</section>
+</div>
+<div id="example-input-mechanisms">
+<section id="appendix-A">
+      <h2 id="name-example-input-mechanisms">
+<a href="#appendix-A" class="section-number selfRef">Appendix A. </a><a href="#name-example-input-mechanisms" class="section-name selfRef">Example Input Mechanisms</a>
+      </h2>
+<p id="appendix-A-1">Any input mechanism capable of producing 7 + K reliably distinguishable signals can drive a BCNP Controller. For a brain-computer interface, this may be a set of K + 7 distinct motor imagery classes (for example, imagining movement of different limbs), or a set of K + 7 distinct imagined-speech classes; nothing in this document assumes one over the other, or assumes a brain-computer interface at all.<a href="#appendix-A-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="example-device-onboarding">
+<section id="appendix-B">
+      <h2 id="name-example-device-onboarding">
+<a href="#appendix-B" class="section-number selfRef">Appendix B. </a><a href="#name-example-device-onboarding" class="section-name selfRef">Example Device Onboarding</a>
+      </h2>
+<p id="appendix-B-1">This document assumes Devices join the Controller's wireless network before engaging in BCNP (see "Deployment Model"), but specifies no mechanism for doing so. A Device capable of joining any WPA2 or WPA3 network by ordinary means (for example, WPS, a QR code, or manual credential entry) can join the Controller's network the same way, since it is an ordinary WPA2/WPA3 network from the Device's perspective.<a href="#appendix-B-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="acknowledgments">
+<section id="appendix-C">
+      <h2 id="name-acknowledgments">
+<a href="#name-acknowledgments" class="section-name selfRef">Acknowledgments</a>
+      </h2>
+<p id="appendix-C-1">I thank Professor Abeer T. Khalil, of the Electronics and Communication Department, Faculty of Engineering, Mansoura University, who supervised this work as a graduation project and reviewed the protocol design.<a href="#appendix-C-1" class="pilcrow">¶</a></p>
+</section>
+</div>
+<div id="authors-addresses">
+<section id="appendix-D">
+      <h2 id="name-authors-address">
+<a href="#name-authors-address" class="section-name selfRef">Author's Address</a>
+      </h2>
+<address class="vcard">
+        <div dir="auto" class="left"><span class="fn nameRole">Mohamed Salaheldin Abouelkhir Attia</span></div>
+<div class="email">
+<span>Email:</span>
+<a href="mailto:mohammeds.aboelkher@gmail.com" class="email">mohammeds.aboelkher@gmail.com</a>
+</div>
+</address>
+</section>
+</div>
+<script>const toc = document.getElementById("toc");
+toc.querySelector("h2").addEventListener("click", e => {
+  toc.classList.toggle("active");
+});
+toc.querySelector("nav").addEventListener("click", e => {
+  toc.classList.remove("active");
+});
+</script>
+</body>
+</html>
